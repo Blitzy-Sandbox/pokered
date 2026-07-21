@@ -26,12 +26,12 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 |--------|---------------------|---------|
 | `data/events/trades.asm` | The in-game trade table; it contains no `MEW` entry. | 04, mf-6 |
 | `data/pokemon/base_stats/mew.asm:L1` | `db DEX_MEW` — Mew has a complete base-stats entry, i.e. it is fully implemented. | 04 |
-| `data/pokemon/base_stats/mew.asm:L6` | Mew's type is `PSYCHIC`. | 01, glossary |
+| `data/pokemon/base_stats/mew.asm:L6` | Mew's type is `PSYCHIC`. | 01 |
 | `data/pokemon/base_stats/mew.asm:L7` | `db 45 ; catch rate` — Mew's catch rate is 45. | README, 01, 02, 03, 04, glossary |
 | `data/pokemon/base_stats/mew.asm:L13` | Level-1 learnset `db POUND, NO_MOVE, NO_MOVE, NO_MOVE`. | 01 |
 | `data/pokemon/names.asm:L23` | `dname "MEW"` — Mew has a defined name. | 04 |
 | `data/pokemon/palettes.asm:L154` | `db PAL_MEWMON ; MEW` — Mew has a defined palette. | 04 |
-| `data/wild/probabilities.asm:L11` | `WildMonEncounterSlotChances` — the 10-slot encounter-chance table (cumulative sum 256). | 02, mf-3 |
+| `data/wild/probabilities.asm:L11-28` | `WildMonEncounterSlotChances` — the 10-slot encounter-chance table; the ten `wild_chance` entries sum to 256 (`ASSERT wild_chance_total == 256`). | 02, mf-3 |
 
 ## engine/
 
@@ -41,11 +41,13 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `engine/battle/core.asm:L6543-6548` | `BattleRandom` uses the shared PRNG only when `wLinkState == LINK_STATE_BATTLING`; otherwise it falls through via `jp nz, Random`. | 02, mf-6 |
 | `engine/battle/core.asm:L6664` | `callfar TryDoWildEncounter` triggers wild-encounter generation from the battle-entry path. | 02 |
 | `engine/battle/wild_encounters.asm:L3-102` | `TryDoWildEncounter` selects the wild species strictly from the current map's tables. | 02, mf-1, mf-3 |
-| `engine/battle/wild_encounters.asm:L49-65` | Encounter-slot selection compares `hRandomSub` against `WildMonEncounterSlotChances`. | 02, mf-3 |
+| `engine/battle/wild_encounters.asm:L47-53` | Encounter-rate check — the map's `wGrassRate` is compared against `hRandomAdd` to decide whether an encounter occurs. | 02, mf-3 |
+| `engine/battle/wild_encounters.asm:L54-65` | Encounter-slot selection compares `hRandomSub` against the cumulative `WildMonEncounterSlotChances` table. | 02, glossary, mf-3 |
 | `engine/battle/wild_encounters.asm:L66-80` | The species is read from `wGrassMons`/`wWaterMons` into `wCurPartySpecies`/`wEnemyMonSpecies2`. | 02, mf-2, mf-3 |
 | `engine/battle/wild_encounters.asm:L71-72` | Comment: a Cinnabar east-coast "left shore" half-block loads grass encounters. | mf-2 |
+| `engine/battle/wild_encounters.asm:L74-80` | The wild species is loaded from the table into `wCurEnemyLevel`/`wCurPartySpecies`/`wEnemyMonSpecies2`; no arithmetic can reach a species absent from the table (the bounding fact). | 02, mf-3 |
 | `engine/debug/debug_party.asm:L1` | `SetDebugNewGameParty` is "unreferenced except in `_DEBUG`". | 04 |
-| `engine/debug/debug_party.asm:L15-24` | `DebugNewGameParty` lists `db MEW, 5` / `db MEW, 20` — the only in-ROM Mew grant, dead code in retail builds. | 04 |
+| `engine/debug/debug_party.asm:L15-24` | `DebugNewGameParty` lists `db MEW, 5` / `db MEW, 20` — the only in-ROM Mew grant, dead code in retail builds. | 04, glossary |
 | `engine/debug/debug_party.asm:L34` | `PrepareNewGameDebug` is "dummy except in `_DEBUG`". | 04 |
 | `engine/items/item_effects.asm:L18` | `ItemUsePtrTable` dispatches each item id to its effect routine. | mf-4 |
 | `engine/items/item_effects.asm:L104` | `ItemUseBall` — the entry point for throwing a Poké Ball. | 02 |
@@ -57,6 +59,7 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `engine/items/item_effects.asm:L169-175` | Ghost-Marowak guard: `RESTLESS_SOUL` on `POKEMON_TOWER_6F` is uncatchable. | 02 |
 | `engine/items/item_effects.asm:L300-303` | Catch-rate comparison: `cp b` then `jr c, .failedToCapture`. | 02, mf-3 |
 | `engine/items/item_effects.asm:L395-412` | Shake-count determination (0–3 shakes) from the capture quotient. | 02 |
+| `engine/items/item_effects.asm:L414-416` | The Poké Ball animation/result is stored to `wPokeBallAnimData` (`.setAnimData`). | 02 |
 | `engine/link/cable_club.asm` | Link-session logic for the Cable Club. | mf-6 |
 | `engine/math/random.asm:L1-13` | `Random_` derives a 16-bit value from the hardware divider `rDIV` via the seed bytes `hRandomAdd`/`hRandomSub`. | 02, glossary, mf-3 |
 | `engine/math/random.asm:L3` | `ldh a, [rDIV]` — the RNG reads the hardware divider register as its entropy source. | 02, glossary |
@@ -77,7 +80,7 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | Anchor | What it establishes | Used by |
 |--------|---------------------|---------|
 | `ram/hram.asm:L270-271` | `hRandomAdd`/`hRandomSub` — the RNG seed bytes. | 02, glossary |
-| `ram/sram.asm` | SRAM layout — the disclosed save-corruption surface. | mf-5 |
+| `ram/sram.asm:L12-21` | The `SRAM` "Save Data" section (`sGameData`/`sPlayerName`/`sCurBoxData`) — persists the save file and the Pokémon storage boxes; the disclosed save/box-corruption surface. | glossary, mf-5 |
 | `ram/wram.asm:L1101` | `wCurPartySpecies` — the current party/encounter species byte. | 02 |
 | `ram/wram.asm:L1198` | `wEnemyMon` — the enemy Pokémon battle struct. | 02 |
 | `ram/wram.asm:L1715` | `wPlayerName` (`ds NAME_LENGTH`) — the player-name buffer. | 02, mf-2 |

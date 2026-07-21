@@ -69,7 +69,7 @@ This is the pipeline any legitimate wild capture must traverse, and it is the cr
 ### Slot selection
 
 - When an encounter passes, the `hRandomSub` byte is compared against the cumulative `WildMonEncounterSlotChances` table to choose one of the encounter slots `[engine/battle/wild_encounters.asm:L54-65]`.
-- That table defines exactly 10 slots whose chances sum to 256 `[data/wild/probabilities.asm:L11]`.
+- That table defines exactly 10 slots whose chances sum to 256 `[data/wild/probabilities.asm:L11-28]`.
 
 ### Species read and the bounding fact
 
