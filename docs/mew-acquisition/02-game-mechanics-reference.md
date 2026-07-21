@@ -1,6 +1,6 @@
 # Game mechanics reference
 
-This chapter is the code-cited technical foundation the six method chapters build on. It documents the shared primitives every candidate mechanism (MF-1 … MF-6) is evaluated against: the species index, the random number generator, wild-encounter generation, the catch algorithm and its guards, the battle-data and name RAM buffers, and the character codec. Each primitive is grounded in a specific line of this checkout of the pret **pokered** disassembly, so that the per-method chapters can reason about whether species `$15` (Mew) can be placed into a catchable battle or a party/box slot without re-deriving the mechanics here.
+This chapter is the code-cited technical foundation the seven method chapters build on. It documents the shared primitives every candidate mechanism (MF-1 … MF-7) is evaluated against: the species index, the random number generator, wild-encounter generation, the catch algorithm and its guards, the battle-data and name RAM buffers, and the character codec. Each primitive is grounded in a specific line of this checkout of the pret **pokered** disassembly, so that the per-method chapters can reason about whether species `$15` (Mew) can be placed into a catchable battle or a party/box slot without re-deriving the mechanics here.
 
 This is a neutral description of how the game works. Where a primitive happens to be the technical basis of a publicly documented glitch, that fact is noted and deferred to the [novelty verification](03-novelty-verification.md); no glitch is presented here as novel. Every sentence that asserts game behavior ends with an inline `[path:Lx-Ly]` citation, per requirement R3, and the consolidated anchor list lives in the [citation index](citation-index.md).
 
@@ -12,7 +12,7 @@ This is a neutral description of how the game works. Where a primitive happens t
 	const MEW                ; $15
 ```
 
-- Every acquisition mechanism must ultimately place this one byte, `$15`, into a species field that the battle or storage code reads, so the index value is the quantity all six method chapters are chasing `[constants/pokemon_constants.asm:L30]`.
+- Every acquisition mechanism must ultimately place this one byte, `$15`, into a species field that the battle or storage code reads, so the index value is the quantity all seven method chapters are chasing `[constants/pokemon_constants.asm:L30]`.
 
 Because `$15` is a fixed constant, "obtaining Mew" reduces to whether any input-reachable code path can write `$15` into a species field such as `wCurPartySpecies` or `wEnemyMonSpecies2` `[constants/pokemon_constants.asm:L30]`. The sections below describe every primitive that reads or writes those fields.
 
@@ -168,11 +168,11 @@ The union of `wLinkEnemyTrainerName` with the wild-data buffer `wGrassRate` `[ra
 
 ## Character codec and name-typeability bound
 
-The name buffer can only ever hold byte values that the character map can encode from name entry, and this caps what the name-buffer mechanism can place into a species field `[constants/charmap.asm:L1]`.
+The bytes a player can *type* into a name are capped by the character map, which bounds what a typed name byte can place into a species field; positions that are not typed characters instead hold indeterminate residual RAM `[constants/charmap.asm:L1]`.
 
 - Bytes `$00` through `$17` are reserved as `TX_*` text-control codes, not typeable glyphs `[constants/charmap.asm:L1]`.
-- Every name-enterable glyph is a HIGH byte: the space character is `$7f` `[constants/charmap.asm:L63]`, the letter `A` is `$80` `[constants/charmap.asm:L92]`, and the letter `Z` is `$99` `[constants/charmap.asm:L117]`.
-- Bound: because all typeable characters encode to bytes at or above `$7f`, while `$15` lies inside the low control-code region, no name character encodes to the byte `$15` `[constants/charmap.asm:L1]`. Therefore the name buffer can never contain Mew's index, which is the feasibility ceiling on the name-buffer method in [mf-2](methods/mf-2-cinnabar-name-buffer.md).
+- Every name-enterable glyph is a HIGH byte: the space character is `$7f` `[constants/charmap.asm:L63]`, the letter `A` is `$80` `[constants/charmap.asm:L92]`, and the letter `Z` is `$99` `[constants/charmap.asm:L117]`; the only sub-`$7f` byte a name carries is the `"@"` terminator `$50` `[constants/charmap.asm:L12]`.
+- Bound: because every typeable character encodes to a byte at or above `$7f` and the only other name byte is the `$50` terminator, while `$15` lies inside the low `$00`–`$17` control-code region, no *typed* name byte encodes to `$15` `[constants/charmap.asm:L1]`. So the species bytes a name seeds into typed positions can never be Mew's index; bytes read from positions past the copy or past the terminator are indeterminate residual — the disclosed "Missingno." state — not a typed-input lever to `$15`, which is the feasibility ceiling on the name-buffer method in [mf-2](methods/mf-2-cinnabar-name-buffer.md).
 
 ## Battle types
 

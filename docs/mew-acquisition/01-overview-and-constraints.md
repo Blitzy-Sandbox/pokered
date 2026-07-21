@@ -19,7 +19,7 @@ The user's request imposes four binding requirements. They are restated here and
 | R1 | Novelty — the method must be novel and not currently disclosed on the internet. | No technique already published online may be presented as new. The Mew glitch (a.k.a. long-range trainer glitch) and the Trainer-Fly glitch are explicitly named as excluded, and they are illustrative of a broader disclosed corpus — the Ditto/special-stat tricks, arbitrary code execution (ACE), save/box corruption, and the Old Man / Cinnabar name-buffer encounter — all catalogued and excluded in [Novelty verification](03-novelty-verification.md). |
 | R2 | Inputs only — catch Mew using only inputs provided by the game. | The procedure must be reachable using standard in-game controller inputs alone. Source edits, ROM patches, cheat devices, memory pokes, save-file surgery, and non-standard peripherals are all disallowed; the exact boundary is fixed in the next section. |
 | R3 | Mandatory citations — every assertion cites a code file and line number. | Every sentence asserting game behavior ends with an inline `[path:Lx-Ly]` citation to this disassembly. Wikis, forums, and speedrun references may inform the R1 disclosed-corpus baseline but are never cited as evidence of how the game behaves. |
-| R4 | Completeness — if multiple methods are found, list every single one. | The guide exhaustively enumerates all six candidate mechanism families (MF-1 … MF-6) and adjudicates each against R1 and R2; none is left as "pending" or "to be discovered." |
+| R4 | Completeness — if multiple methods are found, list every single one. | The guide exhaustively enumerates all seven candidate mechanism families (MF-1 … MF-7) and adjudicates each against R1 and R2; none is left as "pending" or "to be discovered." |
 
 The two glitches named in R1 are illustrative, not the full exclusion set: R1 excludes the entire already-disclosed corpus, of which those two are only the best-known members.
 
@@ -48,6 +48,8 @@ Requirement R2 restricts the guide to "legitimate game input." To make that boun
 
 Timing is admitted as a legal input because it only perturbs the random number generator's seed: the generator draws its entropy from the hardware divider register `rDIV`, which it reads directly `[engine/math/random.asm:L3]`, so varying when a button is pressed changes the seed but never injects new data into the game.
 
+The Game Link Cable is admitted with a provenance limit. A trade relays only a Pokémon that a cartridge already holds, so *receiving* an externally-sourced or event Mew by trade is not a qualifying catch or origination for this guide. A method qualifies only when legitimate inputs on an unmodified game *originate* Mew; relaying a pre-existing one merely defers its provenance to whatever produced it, which is why the link-trade path is adjudicated as transfer-only in [MF-6](methods/mf-6-link-trade.md).
+
 ## Mew facts (from source)
 
 Mew is defined in the disassembly as a species. The facts a capture attempt depends on are drawn directly from source below.
@@ -66,13 +68,14 @@ Taken together, these entries show that Mew is defined as a complete, fully spec
 Read the chapters in order; each builds on the shared mechanics established earlier.
 
 - [Game mechanics reference](02-game-mechanics-reference.md) — the shared primitives (species index, RNG, wild-encounter generation, catch algorithm, RAM buffers, character codec) that every method chapter is evaluated against.
-- The six candidate mechanism families, one chapter each, under `methods/`:
+- The seven candidate mechanism families, one chapter each, under `methods/`:
   - [MF-1 — special-stat / interrupted-battle encounter](methods/mf-1-special-stat-encounter.md)
   - [MF-2 — Old Man / Cinnabar name-buffer encounter](methods/mf-2-cinnabar-name-buffer.md)
   - [MF-3 — RNG manipulation of encounters](methods/mf-3-rng-manipulation.md)
   - [MF-4 — arbitrary code execution](methods/mf-4-arbitrary-code-execution.md)
   - [MF-5 — save / box / SRAM corruption](methods/mf-5-save-box-corruption.md)
   - [MF-6 — link-trade state introduction](methods/mf-6-link-trade.md)
+  - [MF-7 — move-name-buffer overflow (CoolTrainer♀)](methods/mf-7-move-name-buffer-overflow.md)
 - [Novelty verification](03-novelty-verification.md) — the disclosed-corpus baseline and the per-method novelty verdicts.
 - [Conclusion and limitations](04-conclusion-and-limitations.md) — the synthesized gap-analysis outcome and the guide's honesty statement.
 - [Glossary](glossary.md) — terminology used throughout (species index, Special stat, DV, RNG seed, name buffer, ACE, and more).
