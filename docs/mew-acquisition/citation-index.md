@@ -9,7 +9,7 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | Anchor | What it establishes | Used by |
 |--------|---------------------|---------|
 | `constants/battle_constants.asm:L42-44` | Defines `BATTLE_TYPE_NORMAL` (0), `BATTLE_TYPE_OLD_MAN` (1), and `BATTLE_TYPE_SAFARI` (2). | 02, glossary, mf-2 |
-| `constants/charmap.asm:L1` | Bytes `$00`–`$17` are `TX_*` text-control codes, not typeable name glyphs. | 02, 03, glossary, mf-2 |
+| `constants/charmap.asm:L1` | Bytes `$00`–`$17` are `TX_*` text-control codes, not typeable name glyphs. | 02, 03, 04, glossary, mf-2 |
 | `constants/charmap.asm:L63` | The space character maps to byte `$7f`. | 02, 03, glossary, mf-2 |
 | `constants/charmap.asm:L92` | The letter `A` maps to byte `$80`. | 02, glossary, mf-2 |
 | `constants/charmap.asm:L93` | The letter `B` maps to byte `$81`. | mf-2 |
@@ -27,6 +27,7 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 
 | Anchor | What it establishes | Used by |
 |--------|---------------------|---------|
+| `data/events/prizes.asm:L9-42` | The two Game Corner prize-Pokémon lists (`PrizeMenuMon1Entries`/`PrizeMenuMon2Entries`); none of the prize species is Mew. | 04 |
 | `data/events/trades.asm:L18-27` | The ten fixed NPC `TradeMons` entries; none of them is Mew. | 04, mf-6 |
 | `data/pokemon/base_stats/mew.asm:L1` | `db DEX_MEW` — Mew has a complete base-stats entry, i.e. it is fully implemented. | 04 |
 | `data/pokemon/base_stats/mew.asm:L6` | Mew's type is `PSYCHIC`. | 01 |
@@ -52,11 +53,12 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `engine/battle/wild_encounters.asm:L54-65` | Encounter-slot selection compares `hRandomSub` against the cumulative `WildMonEncounterSlotChances` table. | 02, glossary, mf-3 |
 | `engine/battle/wild_encounters.asm:L66-80` | The species is read from `wGrassMons`/`wWaterMons` into `wCurPartySpecies`/`wEnemyMonSpecies2`. | 02, mf-2, mf-3 |
 | `engine/battle/wild_encounters.asm:L71-72` | Comment: a Cinnabar east-coast "left shore" half-block loads grass encounters. | mf-2 |
-| `engine/battle/wild_encounters.asm:L74-80` | The wild species is loaded from the table into `wCurEnemyLevel`/`wCurPartySpecies`/`wEnemyMonSpecies2`; no arithmetic can reach a species absent from the table (the bounding fact). | 02, 03, mf-3 |
+| `engine/battle/wild_encounters.asm:L74-80` | The wild species is loaded from the table into `wCurEnemyLevel`/`wCurPartySpecies`/`wEnemyMonSpecies2`; no arithmetic can reach a species absent from the table (the bounding fact). | 02, 03, 04, mf-3 |
 | `engine/debug/debug_party.asm:L1` | `SetDebugNewGameParty` is "unreferenced except in `_DEBUG`". | 04 |
 | `engine/debug/debug_party.asm:L15-24` | `DebugNewGameParty` lists `db MEW, 5` / `db MEW, 20` — the only in-ROM Mew grant, dead code in retail builds. | 03, 04, glossary |
 | `engine/debug/debug_party.asm:L24` | The `ELSE`-branch grant byte `db MEW, 20`, assembled into the retail build but never reached in normal play. | 03 |
 | `engine/debug/debug_party.asm:L34` | `PrepareNewGameDebug` is "dummy except in `_DEBUG`". | 04 |
+| `engine/debug/debug_party.asm:L158-159` | In a retail build `PrepareNewGameDebug` compiles to a bare `ret` (the `ELSE` branch), so the debug party list is never read in normal play. | 04 |
 | `engine/items/item_effects.asm:L1-16` | `UseItem_` computes an effect-handler address from item data and jumps to it via `jp hl`. | 03 |
 | `engine/items/item_effects.asm:L18` | `ItemUsePtrTable` dispatches each item id to its effect routine. | mf-4 |
 | `engine/items/item_effects.asm:L104` | `ItemUseBall` — the entry point for throwing a Poké Ball. | 02, mf-1, mf-2, mf-3, mf-4, mf-5, mf-6 |
@@ -70,7 +72,7 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `engine/items/item_effects.asm:L395-412` | Shake-count determination (0–3 shakes) from the capture quotient. | 02, glossary |
 | `engine/items/item_effects.asm:L414-416` | The Poké Ball animation/result is stored to `wPokeBallAnimData` (`.setAnimData`). | 02 |
 | `engine/link/cable_club.asm:L4` | `CableClub_DoBattleOrTrade` drives the Colosseum/Trade Center link session. | mf-6 |
-| `engine/link/cable_club.asm:L131-135` | The link trade loads the player/enemy party-data blocks and exchanges them via `Serial_ExchangeBytes`. | 03 |
+| `engine/link/cable_club.asm:L131-135` | The link trade loads the player/enemy party-data blocks and exchanges them via `Serial_ExchangeBytes`. | 03, 04 |
 | `engine/link/cable_club.asm:L274-278` | Writes `wLinkState` (`LINK_STATE_TRADING` for a trade, `LINK_STATE_BATTLING` for a battle). | mf-6 |
 | `engine/math/random.asm:L1-13` | `Random_` derives a 16-bit value from the hardware divider `rDIV` via the seed bytes `hRandomAdd`/`hRandomSub`. | 02, 03, glossary, mf-3 |
 | `engine/math/random.asm:L3` | `ldh a, [rDIV]` — the RNG reads the hardware divider register as its entropy source. | 02, glossary, mf-3 |
@@ -122,16 +124,25 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 |--------|---------------------|---------|
 | `scripts/ViridianCity.asm:L62-83` | The Old Man catch tutorial sets `BATTLE_TYPE_OLD_MAN` from a normal input path. | 02, 03, glossary, mf-2 |
 
+## text/
+
+| Anchor | What it establishes | Used by |
+|--------|---------------------|---------|
+| `text/PokemonMansion2F.asm:L31-32` | Pokémon Mansion 2F journal flavor ("newly discovered / #MON, MEW.") — story text, not a species placement. | 04 |
+| `text/PokemonMansion3F.asm:L33` | Pokémon Mansion 3F journal flavor ("MEW gave birth.") — story text, not a species placement. | 04 |
+
 ## build & docs
 
 These anchors support the optional reader-verification appendix only (AAP §0.9); they are build/toolchain references, not evidence for any behavioral capture claim.
 
 | Anchor | What it establishes | Used by |
 |--------|---------------------|---------|
-| `INSTALL.md:L148` | `make` builds `pokered.gbc` and `pokeblue.gbc`. | README |
+| `INSTALL.md:L148` | `make` builds `pokered.gbc` and `pokeblue.gbc`. | README, 04 |
+| `Makefile:L1-4` | The default `roms` target builds `pokered.gbc`, `pokeblue.gbc`, and `pokeblue_debug.gbc`. | 04 |
 | `Makefile:L96-97` | `compare:` runs `sha1sum -c roms.sha1` for byte-exact ROM verification. | README, 04 |
-| `Makefile:L104-106` | The `DEBUG=1` build flag exposes `_DEBUG`-gated code (illustration only). | 04 |
-| `.rgbds-version:L1` | The build toolchain is pinned to RGBDS `1.0.1`. | README |
+| `Makefile:L104-106` | The `DEBUG=1` flag adds `RGBASMFLAGS += -E` to generate a debug sym/map; it does not define `_DEBUG`. | 04 |
+| `Makefile:L111` | The `pokeblue_debug` object is assembled with `-D _DEBUG`, compiling the `_DEBUG`-gated code (e.g. the debug party) into `pokeblue_debug.gbc` only — illustration only. | 04 |
+| `.rgbds-version:L1` | The build toolchain is pinned to RGBDS `1.0.1`. | README, 04 |
 
 ## See also
 

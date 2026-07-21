@@ -6,7 +6,7 @@ This is the payoff chapter of the guide, and its value is the rigor of a negativ
 
 Mew is a fully specified species. It has a name, `dname "MEW"` `[data/pokemon/names.asm:L23]`; a palette, `db PAL_MEWMON ; MEW` `[data/pokemon/palettes.asm:L154]`; a complete base-stats entry beginning `db DEX_MEW` `[data/pokemon/base_stats/mew.asm:L1]` with a catch rate of 45 `[data/pokemon/base_stats/mew.asm:L7]`; and a reserved species index, `const MEW ; $15` `[constants/pokemon_constants.asm:L30]`. By every measure of definition, the game knows what Mew is.
 
-What the game lacks is any *placement* of that species into a source a player can reach. The distinction between a definition and a placement is the crux of this chapter: a definition tells the engine how to render and simulate species `$15` once it is the current species, whereas a placement is what writes `$15` into a species field through normal play `[constants/pokemon_constants.asm:L30]`. Two routines that mention `MEW` are easily mistaken for placements but are in fact only *loaders*. The graphics-bank selector compares the current species against `MEW` to route Mew's sprite to bank `$1` `[home/pics.asm:L11-23]`, and the base-stats loader special-cases `MEW` with `cp MEW` / `jr z, .mew` to read its stats `[home/pokemon.asm:L399-400]`. Both run only *if Mew is already the current species*; they route data, they do not introduce Mew, and their presence merely corroborates that Mew was appended to the roster late and handled specially `[home/pics.asm:L11-23]`. The Pokémon Mansion journals likewise mention Mew as flavor narrative — "newly discovered #MON, MEW" `[text/PokemonMansion2F.asm:L32]` and "MEW gave birth" `[text/PokemonMansion3F.asm:L33]` — which is story text, not a species placement.
+What the game lacks is any *placement* of that species into a source a player can reach. The distinction between a definition and a placement is the crux of this chapter: a definition tells the engine how to render and simulate species `$15` once it is the current species, whereas a placement is what writes `$15` into a species field through normal play `[constants/pokemon_constants.asm:L30]`. Two routines that mention `MEW` are easily mistaken for placements but are in fact only *loaders*. The graphics-bank selector compares the current species against `MEW` to route Mew's sprite to bank `$1` `[home/pics.asm:L11-23]`, and the base-stats loader special-cases `MEW` with `cp MEW` / `jr z, .mew` to read its stats `[home/pokemon.asm:L399-400]`. Both run only *if Mew is already the current species*; they route data, they do not introduce Mew, and their presence merely corroborates that Mew was appended to the roster late and handled specially `[home/pics.asm:L11-23]`. The Pokémon Mansion journals likewise mention Mew as flavor narrative — "newly discovered #MON, MEW" `[text/PokemonMansion2F.asm:L31-32]` and "MEW gave birth" `[text/PokemonMansion3F.asm:L33]` — which is story text, not a species placement.
 
 An exhaustive audit of the `MEW` symbol across the tree makes the gap explicit. The table below records every occurrence and whether it constitutes an obtainable placement.
 
@@ -19,7 +19,7 @@ An exhaustive audit of the `MEW` symbol across the tree makes the gap explicit. 
 | `cp MEW` graphics-bank selection `[home/pics.asm:L11-23]` | Loader (routes graphics if Mew is current) | No — loader, not a placement |
 | `cp MEW` / `jr z, .mew` base-stats special case `[home/pokemon.asm:L399-400]` | Loader (routes stats if Mew is current) | No — loader, not a placement |
 | `db MEW, 5` / `db MEW, 20` in `DebugNewGameParty` `[engine/debug/debug_party.asm:L15-24]` | Dead code (only in-ROM grant) | No — unreferenced except `_DEBUG` `[engine/debug/debug_party.asm:L1]` |
-| Journal flavor text `[text/PokemonMansion2F.asm:L32]`, `[text/PokemonMansion3F.asm:L33]` | Flavor narrative | No — story text, not a placement |
+| Journal flavor text `[text/PokemonMansion2F.asm:L31-32]`, `[text/PokemonMansion3F.asm:L33]` | Flavor narrative | No — story text, not a placement |
 | Any table in `data/wild/*` | Wild-encounter tables | No — no `MEW` entry; selection is table-bounded `[engine/battle/wild_encounters.asm:L74-80]` |
 | `TradeMons` `[data/events/trades.asm:L18-27]` | In-game trade table | No — ten fixed trades, none is Mew |
 | Gift / static / prize scripts | Event placements | No — an audit returns no `MEW` placement |
@@ -47,7 +47,7 @@ flowchart TD
     D --> F
     F -->|"No - audit returns none"| G["Mew unobtainable by normal play"]
     E -->|"unreferenced except _DEBUG"| G
-    G --> H["Every input-only path to $15 is table-bounded, dead code, or a disclosed glitch"]
+    G --> H["Every input-only path to $15 is table-bounded, dead code, a disclosed glitch, or transfer-only link trade"]
 ```
 
 ## The dead debug path (why it is not a method)
@@ -68,17 +68,18 @@ The Old Man / Cinnabar name-buffer pipeline reads leftover name bytes as wild-en
 
 The known glitch space for obtaining Mew is already publicly documented, and this guide adjudicates novelty against that public corpus as it stood at authoring time. Within that boundary the honest outcome is stated plainly: **no genuinely undisclosed, inputs-only method of catching species `$15` `[constants/pokemon_constants.asm:L30]` was found, and this guide fabricates none.** Every candidate mechanism family — the six method-chapter families MF-1 through MF-6, together with the added move-name-buffer overflow family MF-7 — was run through the same three gates and is recorded with a verdict in the [novelty verification](03-novelty-verification.md).
 
-Every input-reachable path to species `$15` falls into one of three buckets, none of which yields a new capture method `[constants/pokemon_constants.asm:L30]`:
+Every input-reachable path to species `$15` falls into one of four buckets, none of which yields a new capture method `[constants/pokemon_constants.asm:L30]`:
 
 - Table-bounded and impossible: the wild-encounter and RNG paths can only select a species already present in a map's table, and Mew is in none `[engine/battle/wild_encounters.asm:L74-80]`.
 - Dead debug code: the only in-ROM `db MEW` grant is unreferenced in retail builds and is a build-time artifact, not an input `[engine/debug/debug_party.asm:L1]`.
 - Disclosed and therefore R1-excluded: the special-stat / interrupted-battle family, the name-buffer family, arbitrary code execution, save/box corruption, and the move-name-buffer overflow are all in the public corpus and are documented only as contrast, as tabulated in the [novelty verification](03-novelty-verification.md).
+- Transfer-only via link trade (MF-6): a Game Link Cable trade can relay a Mew that already exists on a partner cartridge but cannot originate one from two clean, unmodified saves `[engine/link/cable_club.asm:L131-135]`, and no obtainable source places Mew into the trade data for such a trade to relay in the first place `[data/events/trades.asm:L18-27]`. This preserves the possibility of *receiving* a pre-existing or event Mew by trade while proving that neither cartridge can *originate* one, and it matches the four-bucket taxonomy of the [novelty verification](03-novelty-verification.md).
 
 The guide's substantive value is the rigor with which this negative result is grounded in source, not a claim to a secret technique.
 
 ## Optional reader verification (emulator)
 
-A reader who wishes to confirm any behavioral claim empirically may build and run the game using the project's existing, unmodified toolchain; doing so is not part of authoring this guide, and it must not modify the source, the ROM, or save data. The commands below are given for context only. The reference ROM is produced with `make` `[INSTALL.md:L148]`, and its byte-exact identity can be checked with `make compare`, which runs `sha1sum -c roms.sha1` `[Makefile:L96-97]`. A `make DEBUG=1` build flag exists and exposes the `_DEBUG`-gated code such as the debug party `[Makefile:L104-106]`, but it is named here only as illustration — the debug path is not input-reachable and is not a method for obtaining Mew, as established above `[engine/debug/debug_party.asm:L34]`. The build toolchain is pinned to RGBDS `1.0.1` `[.rgbds-version:L1]`.
+A reader who wishes to confirm any behavioral claim empirically may build and run the game using the project's existing, unmodified toolchain; doing so is not part of authoring this guide, and it must not modify the source, the ROM, or save data. The commands below are given for context only. The reference ROM is produced with `make` `[INSTALL.md:L148]`, and its byte-exact identity can be checked with `make compare`, which runs `sha1sum -c roms.sha1` `[Makefile:L96-97]`. A `make DEBUG=1` flag generates a debugging sym/map by adding `RGBASMFLAGS += -E` `[Makefile:L104-106]`; it does **not** define `_DEBUG`. The `_DEBUG`-gated code such as the debug party is instead assembled into the separate `pokeblue_debug.gbc` ROM target via `-D _DEBUG` `[Makefile:L111]` — a target the default `make` already builds `[Makefile:L1-4]` — and never into the retail `pokered.gbc`/`pokeblue.gbc`. Either way this is named here only as illustration: the debug path is not input-reachable and is not a method for obtaining Mew, as established above `[engine/debug/debug_party.asm:L34]`. The build toolchain is pinned to RGBDS `1.0.1` `[.rgbds-version:L1]`.
 
 ## See also
 
