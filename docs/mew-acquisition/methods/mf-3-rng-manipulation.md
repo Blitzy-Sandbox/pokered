@@ -47,7 +47,7 @@ If the gate passes, the second seed byte `hRandomSub` is compared against the cu
 	ld hl, WildMonEncounterSlotChances
 ```
 
-That chance list defines exactly ten slots whose probabilities sum to 256 `[data/wild/probabilities.asm:L11]`, and the slot count is fixed at build time by `NUM_WILDMONS EQU 10` `[constants/pokemon_data_constants.asm:L97-98]`.
+That chance list defines exactly ten slots whose probabilities sum to 256 `[data/wild/probabilities.asm:L11-28]`, and the slot count is fixed at build time by `NUM_WILDMONS EQU 10` `[constants/pokemon_data_constants.asm:L97-98]`.
 
 The chosen slot then indexes the current map's `wGrassMons` or `wWaterMons` table, and the species byte at that offset is stored to `wCurPartySpecies` and `wEnemyMonSpecies2` `[engine/battle/wild_encounters.asm:L66-80]`:
 

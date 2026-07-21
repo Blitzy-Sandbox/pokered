@@ -108,15 +108,15 @@ Once a wild Pokémon is on screen, throwing a ball runs `ItemUseBall` `[engine/i
 - Trainer-mon guard: balls thrown at a trainer's Pokémon divert to `ThrowBallAtTrainerMon` and cannot capture `[engine/items/item_effects.asm:L111-113]`.
 - Old Man exception: during the Old Man tutorial battle the party-and-box-full check is skipped `[engine/items/item_effects.asm:L115-125]`.
 - Ghost-battle guard: `IsGhostBattle` is called, and an unidentified ghost is flagged uncatchable so the capture math is skipped `[engine/items/item_effects.asm:L149-153]`. The predicate `IsGhostBattle` is defined in the battle core `[engine/battle/core.asm:L3309]`.
-- Old Man name copy: in the Old Man branch the player's name is copied into the wild-monster data buffer, commented in-source as part of the Cinnabar Island Missingno. glitch `[engine/items/item_effects.asm:L159-164]`.
+- Old Man name restore: in the Old Man branch `ItemUseBall` copies the wild-monster data buffer back into the player-name buffer. Because `CopyData` copies from `hl` to `de` `[home/copy.asm:L15-16]` and the operands here are `hl = wGrassRate` (source) and `de = wPlayerName` (destination), this restores the name the tutorial had stashed in the buffer, despite the misleading in-source comment `[engine/items/item_effects.asm:L159-164]`:
 
 ```asm
+	ld hl, wGrassRate
 	ld de, wPlayerName
 	ld bc, NAME_LENGTH
-	call CopyData ; save the player's name in the Wild Monster data (part of the Cinnabar Island Missingno. glitch)
 ```
 
-- This name-copy is the real, in-source basis of the disclosed Cinnabar/Missingno. family; it is analyzed and shown to be `$15`-bounded in [mf-2](methods/mf-2-cinnabar-name-buffer.md) and adjudicated in the [novelty verification](03-novelty-verification.md), not presented here as novel `[engine/items/item_effects.asm:L159-164]`.
+- The genuine seed of the disclosed Cinnabar/Missingno. family is the earlier tutorial name save — `wPlayerName` copied into `wLinkEnemyTrainerName`, which shares memory with `wGrassRate` `[engine/battle/core.asm:L2030-2033]`, `[ram/wram.asm:L2144-2155]`; that data flow is analyzed and shown to be `$15`-bounded in [mf-2](methods/mf-2-cinnabar-name-buffer.md) and adjudicated in the [novelty verification](03-novelty-verification.md), not presented here as novel.
 - Ghost-Marowak guard: on Pokémon Tower 6F, an enemy of species `RESTLESS_SOUL` is likewise flagged uncatchable `[engine/items/item_effects.asm:L169-175]`.
 
 ### Catch-rate comparison
@@ -164,7 +164,7 @@ The buffers the routines above read and write are collected here for reference.
 - `wPlayerName` is the player-name buffer, reserved as `ds NAME_LENGTH` `[ram/wram.asm:L1715]`, where `NAME_LENGTH` is 11 `[constants/text_constants.asm:L3]`.
 - `wGrassRate`, `wGrassMons`, `wWaterRate`, and `wWaterMons` hold the current map's wild-encounter rates and 10-slot species lists `[ram/wram.asm:L2145-2151]`.
 
-The adjacency of `wPlayerName` and the wild-data buffers is exactly what the Old Man name-copy above exploits; the data flow is detailed in [mf-2](methods/mf-2-cinnabar-name-buffer.md).
+The union of `wLinkEnemyTrainerName` with the wild-data buffer `wGrassRate` `[ram/wram.asm:L2144-2155]` is exactly what the Old Man tutorial's name save exploits to seed wild-encounter data; the full data flow is detailed in [mf-2](methods/mf-2-cinnabar-name-buffer.md).
 
 ## Character codec and name-typeability bound
 
@@ -176,7 +176,7 @@ The name buffer can only ever hold byte values that the character map can encode
 
 ## Battle types
 
-The battle-type byte `wBattleType` selects special-case behavior in the catch routine, including the Old Man party-and-box-full skip and the name-copy above `[engine/items/item_effects.asm:L115-125]`.
+The battle-type byte `wBattleType` selects special-case behavior in the catch routine, including the Old Man party-and-box-full skip and the name restore above `[engine/items/item_effects.asm:L115-125]`.
 
 | Constant | Value | Meaning |
 |----------|-------|---------|

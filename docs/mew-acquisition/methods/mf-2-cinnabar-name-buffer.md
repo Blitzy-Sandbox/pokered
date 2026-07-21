@@ -3,7 +3,7 @@
 ## Mechanism summary
 
 - This chapter documents the disclosed Old Man / Cinnabar-coast name-buffer family, publicly labelled the "Cinnabar Island" or "Missingno." coast glitch; it is named here only so it can be marked excluded, never presented as new.
-- During the Old Man catch tutorial, `ItemUseBall` copies the player's name from `wPlayerName` into the wild-encounter data buffer that begins at `wGrassRate` [engine/items/item_effects.asm:L159-164].
+- During the Old Man catch tutorial the game temporarily saves the player's name from `wPlayerName` into `wLinkEnemyTrainerName`, which occupies the same union slot as the wild-encounter buffer `wGrassRate`, so the name bytes land in the wild-encounter data [engine/battle/core.asm:L2030-2033], [ram/wram.asm:L2144-2155].
 - Later, on Cinnabar Island's east coast, "left shore" half-blocks load grass encounters [engine/battle/wild_encounters.asm:L71-72] whose species byte is read from that same buffer, now holding leftover name bytes [engine/battle/wild_encounters.asm:L66-80].
 - The family is DISCLOSED and therefore excluded under R1, and for species `$15` it is additionally bounded-impossible because that byte is not a typeable name glyph [constants/charmap.asm:L1].
 
@@ -14,8 +14,8 @@
 | Step | Input | Effect |
 | --- | --- | --- |
 | 1 | Enter a player name at the start of a new game | The name is stored in the 11-byte `wPlayerName` buffer [ram/wram.asm:L1715] |
-| 2 | Complete the Viridian City Old Man catch tutorial | The tutorial script sets `BATTLE_TYPE_OLD_MAN` in `wBattleType` [scripts/ViridianCity.asm:L62-83] |
-| 3 | Let a Ball be thrown during that Old Man battle | `ItemUseBall` copies the name into the wild-data buffer at `wGrassRate` [engine/items/item_effects.asm:L159-164] |
+| 2 | Complete the Viridian City Old Man catch tutorial | The tutorial script sets `BATTLE_TYPE_OLD_MAN` in `wBattleType` [scripts/ViridianCity.asm:L62-83], and the tutorial setup copies `wPlayerName` into `wLinkEnemyTrainerName` (which is the same memory as `wGrassRate`), seeding the wild-data buffer with name bytes [engine/battle/core.asm:L2030-2033] |
+| 3 | Let a Ball be thrown during that Old Man battle | The Old Man branch of `ItemUseBall` copies the buffer back into `wPlayerName`, restoring the name; the bytes already written into `wGrassRate` persist [engine/items/item_effects.asm:L159-164] |
 | 4 | Travel to Cinnabar Island and step onto an east-coast "left shore" tile | The half-block defaults to a grass encounter [engine/battle/wild_encounters.asm:L71-72] |
 | 5 | Trigger the encounter | The buffer byte is read and stored as the wild species [engine/battle/wild_encounters.asm:L66-80] |
 
@@ -23,13 +23,24 @@
 
 ## Code-cited mechanism
 
-- In the Old Man branch of `ItemUseBall`, the source is `wPlayerName`, the length is `NAME_LENGTH`, and the copy destination begins at `wGrassRate` [engine/items/item_effects.asm:L159-164].
+- The name is written into the wild-encounter buffer during the Old Man tutorial setup, not by the ball throw. `CopyData` copies `bc` bytes from `hl` to `de` [home/copy.asm:L15-16], and the tutorial setup sets `hl = wPlayerName` (source) and `de = wLinkEnemyTrainerName` (destination) [engine/battle/core.asm:L2030-2033]:
 
 ```asm
+ld hl, wPlayerName
+ld de, wLinkEnemyTrainerName
+ld bc, NAME_LENGTH
+```
+
+- The in-source comment records the intent directly: the player name is temporarily saved in `wLinkEnemyTrainerName`, and because that label occupies the same union slot as `wGrassRate` the copy lands in the wild-encounter data; a documented oversight leaves it un-overwritten on Cinnabar Island and Route 21 [engine/battle/core.asm:L2024-2029]. That union is declared in WRAM, where `wLinkEnemyTrainerName` aliases `wGrassRate`/`wGrassMons` [ram/wram.asm:L2144-2155].
+- The copy in the Old Man branch of `ItemUseBall` runs later and goes the other way — its source operand is `wGrassRate` and its destination is `wPlayerName`, so it restores the name from the buffer rather than seeding it [engine/items/item_effects.asm:L159-164]:
+
+```asm
+ld hl, wGrassRate
 ld de, wPlayerName
 ld bc, NAME_LENGTH
-call CopyData ; save the player's name in the Wild Monster data (part of the Cinnabar Island Missingno. glitch)
 ```
+
+- The in-source comment on that later copy reads "save the player's name in the Wild Monster data", but the operand order (`hl = wGrassRate`, `de = wPlayerName`) shows it runs buffer-to-name: it restores the name the tutorial setup had already stashed in the buffer [home/copy.asm:L15-16].
 
 - `wPlayerName` is declared as `ds NAME_LENGTH` [ram/wram.asm:L1715], `NAME_LENGTH` equals 11 [constants/text_constants.asm:L3], and the destination `wGrassRate`/`wGrassMons` is the wild-encounter data buffer [ram/wram.asm:L2145-2151].
 - The Old Man battle type that reaches this branch is set from a normal input path — the Viridian City catch tutorial — which writes `BATTLE_TYPE_OLD_MAN` into `wBattleType` [scripts/ViridianCity.asm:L62-83].
@@ -61,9 +72,9 @@ ld [wEnemyMonSpecies2], a
 
 ```mermaid
 flowchart LR
-    NAME["wPlayerName (name bytes)"] --> COPY["CopyData"]
-    COPY --> BUF["wGrassRate / wGrassMons (wild-data buffer)"]
-    BUF --> READ["TryDoWildEncounter reads as wild species"]
+    NAME["wPlayerName (name bytes)"] --> COPY["CopyData: wPlayerName to wLinkEnemyTrainerName (core.asm L2030-2033)"]
+    COPY --> BUF["wLinkEnemyTrainerName == wGrassRate / wGrassMons (wild-data buffer)"]
+    BUF --> READ["TryDoWildEncounter reads buffer as wild species"]
     READ --> BATTLE["Battle with that species"]
     BUF -.-> NOTE["name bytes >= $7f; $15 not typeable"]
 ```
@@ -82,7 +93,7 @@ flowchart LR
 
 - Verdict: **DISCLOSED → EXCLUDED**, and additionally **bounded-impossible for `$15`**.
 - This is the disclosed Cinnabar Island / "Missingno." name-buffer family and is never presented here as a new technique.
-- The in-source name copy is genuine [engine/items/item_effects.asm:L159-164], but the character-map bound makes species `$15` unreachable through it [constants/charmap.asm:L1]; see [Novelty verification](../03-novelty-verification.md) for the disclosed-corpus comparison.
+- The in-source name save is genuine [engine/battle/core.asm:L2030-2033], but the character-map bound makes species `$15` unreachable through it [constants/charmap.asm:L1]; see [Novelty verification](../03-novelty-verification.md) for the disclosed-corpus comparison.
 
 ## Inputs-only verdict (R2)
 

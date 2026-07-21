@@ -3,7 +3,7 @@
 ## Mechanism summary
 
 - Publicly this family is known as the **Mew glitch**, the **long-range Trainer glitch**, the **Trainer-Fly glitch**, and the **Ditto (Special-stat) trick**; those names are disclosure labels only and are not cited as evidence of game behavior.
-- The family interrupts the normal battle-start flow so that a value left in the enemy Pokémon's Special stat is later reinterpreted as the wild-species index, reusing the same enemy-species fields the encounter generator normally fills [engine/battle/wild_encounters.asm:L79-80].
+- The family interrupts the normal battle-start flow so that a value left in memory is copied into the enemy-species field by `InitOpponent` [engine/battle/core.asm:L6647-6650] and is then reinterpreted as a wild-species index when the battle-setup path subtracts the trainer-id offset from that byte and branches to a wild battle [engine/battle/core.asm:L6674-6676].
 - Mew occupies internal species index `$15`, i.e. 21 decimal, so a leftover Special value of 21 is exactly the byte that selects it [constants/pokemon_constants.asm:L30].
 - This technique is **DISCLOSED** and appears here **only as an excluded contrast**; it is never presented as this guide's novel method.
 
@@ -14,40 +14,46 @@
 | Step | Input | Effect |
 | --- | --- | --- |
 | 1 | Arrange for the last Pokémon seen or fought to have a Special of 21 (for example, by battling a species whose Special is 21) | Leaves the value 21 in the enemy-stat memory the glitch later reinterprets |
-| 2 | Walk into a distant Trainer's line of sight, then open the Start menu on the trigger frame | Interrupts the normal battle-start sequence before a wild species is read from a map table |
-| 3 | Close the menu and let the interrupted special encounter resolve | The stored Special value is consumed as the species index, producing a Mew battle |
+| 2 | Walk into a distant Trainer's line of sight, then open the Start menu on the trigger frame | Interrupts the normal battle-start sequence before a wild species is read from a map table [engine/battle/core.asm:L6664] |
+| 3 | Close the menu and let the interrupted special encounter resolve | The retained value is copied into the enemy-species field [engine/battle/core.asm:L6647-6650] and consumed as the species index by the wild-vs-trainer branch, producing a Mew battle [engine/battle/core.asm:L6674-6676] |
 | 4 | Throw a Poké Ball | Hands off to the ordinary catch path (see Catch step) |
 
 - The full, precise public steps for this family are disclosed elsewhere (catalogued in the novelty chapter's corpus) and are out of scope to reproduce here, because R1 explicitly excludes them.
 
 ## Code-cited mechanism
 
-- There is no dedicated "glitch routine" in the source; the family is an emergent misuse of the ordinary encounter and battle-setup paths, so the mechanism is grounded in those normal paths below.
-- In a normal wild encounter the species byte is read from the current map's table and written to both the current-party-species and enemy-species fields [engine/battle/wild_encounters.asm:L66-80]:
+- The family is an emergent misuse of the ordinary battle-setup path rather than a separate routine, yet the exact code that reinterprets a retained value as a wild species can be cited directly. When a battle is set up, `InitOpponent` copies the opponent id from `wCurOpponent` into both the current-party-species and enemy-species fields [engine/battle/core.asm:L6647-6650]:
 
 ```asm
-	ld a, [hl]
+	ld a, [wCurOpponent]
 	ld [wCurPartySpecies], a
 	ld [wEnemyMonSpecies2], a
 ```
 
-- Those two stores are the exact fields the glitch ultimately controls [engine/battle/wild_encounters.asm:L79-80], and the wild-encounter routine that performs them is entered from the overworld through a single far-call [engine/battle/core.asm:L6664]:
+- The battle-setup path then decides whether the battle is wild or trainer by subtracting the trainer-id offset from that enemy-species byte; when the byte is below the offset the subtraction sets the carry flag and the game branches to a wild battle, keeping the byte as the wild-species index [engine/battle/core.asm:L6674-6676]:
+
+```asm
+	ld a, [wEnemyMonSpecies2]
+	sub OPP_ID_OFFSET
+	jp c, InitWildBattle
+```
+
+- `OPP_ID_OFFSET` is defined as 200, so any retained value below 200 is treated as a wild-species index rather than a trainer class [constants/trainer_constants.asm:L1]. A leftover value of 21 is therefore read as wild species index `$15`, which is Mew [constants/pokemon_constants.asm:L30].
+- The enemy Pokémon's data occupies the `wEnemyMon` battle buffer [ram/wram.asm:L1198], and the species byte the branch above tests is held in the adjacent `wEnemyMonSpecies2` field [ram/wram.asm:L1193].
+- In ordinary play this same enemy-species field is instead filled by the wild-encounter generator, which reads a byte from the current map's table; that generator is entered from the overworld through a single far-call [engine/battle/core.asm:L6664]:
 
 ```asm
 	callfar TryDoWildEncounter
 ```
 
-- The enemy Pokémon's data occupies the `wEnemyMon` battle buffer [ram/wram.asm:L1198], and the species byte that decides which Pokémon appears is held in the adjacent `wEnemyMonSpecies2` field [ram/wram.asm:L1193].
-- Wild battles draw their random values from `BattleRandom`, which uses a shared PRNG list only during link battles and otherwise falls straight through to `Random` [engine/battle/core.asm:L6543-6548]:
+- The disclosed technique's only contribution is to interrupt the battle-start sequence so that this far-call never runs and the enemy-species field keeps a leftover value (arranged, in the published recipe, to equal a Special stat of 21); the reinterpretation itself is performed entirely by the ordinary `InitOpponent` copy and the wild-vs-trainer branch cited above [engine/battle/core.asm:L6647-6650], [engine/battle/core.asm:L6674-6676].
+- Once the resulting wild battle has begun, its random values come from `BattleRandom`, which uses a shared PRNG list only during link battles and otherwise falls straight through to `Random` [engine/battle/core.asm:L6543-6548]:
 
 ```asm
 	ld a, [wLinkState]
 	cp LINK_STATE_BATTLING
 	jp nz, Random
 ```
-
-- The disclosed glitch subverts this flow by interrupting the sequence before `TryDoWildEncounter` performs its table read [engine/battle/core.asm:L6664]; the enemy-species field is then populated from a leftover Special-stat value of 21 rather than a table byte, and because index `$15` is Mew that value resolves the encounter to a Mew battle [constants/pokemon_constants.asm:L30].
-- This is described at the adjudication level only; the source contains no distinct "Mew-glitch" subroutine to cite, which is why the mechanics above are grounded in the normal paths the glitch abuses.
 
 ## Catch step
 

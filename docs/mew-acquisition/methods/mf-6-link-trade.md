@@ -41,7 +41,7 @@ ldh [hSerialReceiveData], a
 ```
 
 - Bulk data such as the party structure is moved with the multi-byte routine `Serial_ExchangeBytes`, which copies the bytes of an already-owned Pokémon rather than synthesizing one [home/serial.asm:L55].
-- The impossibility proof has two parts: first, the only NPC trades the game offers are the ten fixed `TradeMons` entries [data/events/trades.asm:L7]:
+- The impossibility proof has two parts: first, the only NPC trades the game offers are the ten fixed `TradeMons` entries [data/events/trades.asm:L18-27]:
 
 ```asm
 npctrade NIDORINO,   NIDORINA,  TRADE_DIALOGSET_CASUAL,    "TERRY"      ; used in ROUTE_11_GATE_2F
