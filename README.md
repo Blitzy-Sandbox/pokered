@@ -18,6 +18,7 @@ To set up the repository, see [**INSTALL.md**](INSTALL.md).
 - [**Wiki**][wiki] (includes [tutorials][tutorials])
 - [**Symbols**][symbols]
 - [**Tools**][tools]
+- [**Catching Mew: A Code-Grounded Guide**](docs/mew-acquisition/README.md)
 
 You can find us on [Discord (pret, #pokered)](https://discord.gg/d5dubZ3).
 
