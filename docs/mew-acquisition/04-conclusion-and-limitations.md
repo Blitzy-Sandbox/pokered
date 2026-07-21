@@ -29,6 +29,7 @@ The word "exhaustive" here is bounded to those audited repository surfaces at th
 | Any table in `data/wild/*` | Wild-encounter tables | No — no `MEW` entry; selection is table-bounded `[engine/battle/wild_encounters.asm:L74-80]` |
 | `TradeMons` `[data/events/trades.asm:L18-27]` | In-game trade table | No — ten fixed trades, none is Mew |
 | Gift / static / prize scripts | Event placements | No — the `MEW` audit returns no placement; the two prize-Pokémon lists carry none `[data/events/prizes.asm:L9-42]` |
+| `call GivePokemon` fed by `wFossilMon` in the fossil-revival hand-over `[scripts/CinnabarLabFossilRoom.asm:L77-80]`, `[home/give.asm:L18-21]` | Dynamic grant (runtime species byte; no literal `MEW` token) | No by normal play — the lab grants only the selected fossil species `[engine/events/cinnabar_lab.asm:L43-49]`; because the grant reads a runtime byte rather than a literal `MEW`, the exact-`MEW` audit above cannot surface it, and the disclosed international fossil-conversion glitch corrupts `wFossilMon` `[ram/wram.asm:L2065]` to reach `$15`, so it is excluded under R1 (see [MF-11](methods/mf-11-fossil-conversion.md)) |
 
 The decisive results are the negatives, and each is reproducible. Every obtainable-source search below returns zero exact-`MEW` entries at this checkout, and each surface is paired with the authoritative acquisition flow that would otherwise write the species byte:
 
@@ -84,7 +85,7 @@ The Old Man / Cinnabar name-buffer pipeline reads leftover name bytes as wild-en
 
 ## Honesty statement
 
-The known glitch space for obtaining Mew is already publicly documented, and this guide adjudicates novelty against that public corpus as it stood at authoring time. Within that boundary the honest outcome is stated plainly: **no genuinely undisclosed, inputs-only method of catching species `$15` `[constants/pokemon_constants.asm:L30]` was found, and this guide fabricates none.** Every candidate mechanism family — the ten method-chapter families MF-1 through MF-10 surfaced by a dated, bounded public-corpus search — was run through the same three gates and is recorded with a verdict in the [novelty verification](03-novelty-verification.md).
+The known glitch space for obtaining Mew is already publicly documented, and this guide adjudicates novelty against that public corpus as it stood at authoring time. Within that boundary the honest outcome is stated plainly: **no genuinely undisclosed, inputs-only method of catching species `$15` `[constants/pokemon_constants.asm:L30]` was found, and this guide fabricates none.** Every candidate mechanism family — the eleven method-chapter families MF-1 through MF-11 surfaced by a dated, bounded public-corpus search — was run through the same three gates and is recorded with a verdict in the [novelty verification](03-novelty-verification.md).
 
 Every input-reachable path to species `$15` that the bounded search surfaced falls into one of four buckets, none of which yields a new capture method `[constants/pokemon_constants.asm:L30]`:
 

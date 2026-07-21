@@ -9,8 +9,8 @@
 
 ## Legal-input sequence
 
-- Not a clean inputs-only path. The overflow only occurs once the game already holds a glitch move whose internal name lacks a `"@"` terminator; obtaining such a move is itself a product of the disclosed glitch corpus, not of ordinary movement, menu, or name-entry input.
-- The routines involved are ordinary game code reached during normal play `[engine/battle/misc.asm:L2]`, but reaching the corrupted state depends on that disclosed precondition, so there is no clean-save, controller-only sequence that leads to species `$15`.
+- Not an *ordinary* play path. The overflow only occurs once the game already holds a glitch move whose internal name lacks a `"@"` terminator; obtaining such a move is itself a product of the disclosed glitch corpus (external disclosure metadata), not of ordinary movement, menu, or name-entry input on a clean save.
+- The routines involved are ordinary game code reached during normal play `[engine/battle/misc.asm:L2]`, and the disclosed corpus documents a controller-only route to that prerequisite state — so the family *is* input-reachable with the standard controller alone, as the Inputs-only verdict (R2) section below records. What it is not is a *clean-save, ordinary-play* sequence: reaching species `$15` this way depends on first establishing the disclosed precondition, so this chapter is excluded under R1 as a disclosed technique rather than under R2.
 - This guide deliberately withholds any concrete recipe for obtaining the glitch move or triggering the overflow; only the *nature* of the mechanism is described.
 
 ## Code-cited mechanism

@@ -2,7 +2,7 @@
 
 This index lists every source anchor cited across the Mew-acquisition guide, grouped by top-level source directory, so that any behavioral claim in any chapter resolves to a real `path:line` in this checkout of the pret **pokered** disassembly. It is the single source of truth for traceability required by **R3**: a reviewer can confirm that each guide assertion maps to a concrete line of code.
 
-Chapters are referenced by short tags: `README`, `01` (overview and constraints), `02` (game-mechanics reference), `03` (novelty verification), `04` (conclusion and limitations), `glossary`, and `mf-1` … `mf-10` (the per-method chapters). Only `path:line` anchors appear here; external corpus URLs (wikis, forums, speedrun references) live solely in `03-novelty-verification.md` as disclosed-corpus metadata and are never used as evidence for game behavior.
+Chapters are referenced by short tags: `README`, `01` (overview and constraints), `02` (game-mechanics reference), `03` (novelty verification), `04` (conclusion and limitations), `glossary`, and `mf-1` … `mf-11` (the per-method chapters). Only `path:line` anchors appear here; external corpus URLs (wikis, forums, speedrun references) live solely in `03-novelty-verification.md` as disclosed-corpus metadata and are never used as evidence for game behavior.
 
 ## constants/
 
@@ -18,16 +18,16 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `constants/charmap.asm:L126` | The letter `a` maps to byte `$a0`. | glossary, mf-2 |
 | `constants/charmap.asm:L187` | The digit `0` maps to byte `$f6`. | glossary, mf-2 |
 | `constants/player_constants.asm:L1-20` | `NUM_PLAYER_NAMES` (3) and the build-specific preset player-name strings selectable at name entry. | mf-2 |
-| `constants/pokemon_constants.asm:L30` | `const MEW` assigns Mew the internal species index `$15` (21 decimal). | README, 01, 02, 03, 04, glossary, mf-1, mf-2, mf-3, mf-4, mf-5, mf-6, mf-7, mf-8, mf-9, mf-10 |
+| `constants/pokemon_constants.asm:L30` | `const MEW` assigns Mew the internal species index `$15` (21 decimal). | 01, 02, 03, 04, README, glossary, mf-1, mf-2, mf-3, mf-4, mf-5, mf-6, mf-7, mf-8, mf-9, mf-10, mf-11 |
 | `constants/pokemon_constants.asm:L97` | `const DRATINI` assigns Dratini the internal species index `$58`. | mf-10 |
 | `constants/pokemon_constants.asm:L99` | `const KABUTO` assigns Kabuto the internal species index `$5A`. | mf-10 |
 | `constants/pokemon_data_constants.asm:L58-60` | `PARTY_LENGTH` (6) and `MONS_PER_BOX` (20) — the party-full and box-full thresholds tested before a ball is thrown. | 02 |
-| `constants/pokemon_data_constants.asm:L97-98` | `NUM_WILDMONS EQU 10` — every map's wild table holds exactly ten slots. | mf-3 |
+| `constants/pokemon_data_constants.asm:L97-98` | `NUM_WILDMONS EQU 10` — every map's wild table holds exactly ten slots. | 02, mf-3 |
 | `constants/serial_constants.asm:L25` | `LINK_STATE_BATTLING EQU $04` marks the in-link-battle state. | 02, glossary, mf-6 |
 | `constants/text_constants.asm:L1` | `PLAYER_NAME_LENGTH EQU 8` — a typed player name occupies at most `PLAYER_NAME_LENGTH - 1` (7) characters plus the terminator. | 02, mf-2 |
 | `constants/text_constants.asm:L3` | `NAME_LENGTH EQU 11` sets the player-name buffer length. | 02, glossary, mf-2 |
 | `constants/text_constants.asm:L8` | `DEF NAME_BUFFER_LENGTH EQU 20` — the 20-byte name/move staging buffer length. | 03, mf-7 |
-| `constants/trainer_constants.asm:L1` | `DEF OPP_ID_OFFSET EQU 200` — a species byte below 200 is a wild Pokémon; 200 and above is a trainer class. | mf-1, mf-9, mf-10 |
+| `constants/trainer_constants.asm:L1` | `DEF OPP_ID_OFFSET EQU 200` — a species byte below 200 is a wild Pokémon; 200 and above is a trainer class. | 03, mf-1, mf-9, mf-10 |
 
 ## data/
 
@@ -57,9 +57,9 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `engine/battle/core.asm:L6138-6141` | Enemy level and stats are copied (`1 + NUM_STATS * 2` bytes) into the `wEnemyMonUnmodified*` mirror via `CopyData`. | mf-1 |
 | `engine/battle/core.asm:L6543-6548` | `BattleRandom` uses the shared PRNG only when `wLinkState == LINK_STATE_BATTLING`; otherwise it falls through via `jp nz, Random`. | 02, glossary, mf-1, mf-6 |
 | `engine/battle/core.asm:L6642` | `InitBattle` — the battle-entry point that leads into wild-encounter setup. | 02 |
-| `engine/battle/core.asm:L6647-6650` | `InitOpponent` copies `wCurOpponent` into `wCurPartySpecies` and `wEnemyMonSpecies2`. | 03, mf-1, mf-9, mf-10 |
+| `engine/battle/core.asm:L6647-6650` | `InitOpponent` copies `wCurOpponent` into `wCurPartySpecies` and `wEnemyMonSpecies2`. | 03, glossary, mf-1, mf-9, mf-10 |
 | `engine/battle/core.asm:L6664` | `callfar TryDoWildEncounter` triggers wild-encounter generation from the battle-entry path. | 02, mf-1, mf-3 |
-| `engine/battle/core.asm:L6674-6676` | Wild-vs-trainer branch: `ld a, [wEnemyMonSpecies2]` / `sub OPP_ID_OFFSET` / `jp c, InitWildBattle` — a species byte below 200 starts a wild battle with that index. | mf-1, mf-9, mf-10 |
+| `engine/battle/core.asm:L6674-6676` | Wild-vs-trainer branch: `ld a, [wEnemyMonSpecies2]` / `sub OPP_ID_OFFSET` / `jp c, InitWildBattle` — a species byte below 200 starts a wild battle with that index. | 03, glossary, mf-1, mf-9, mf-10 |
 | `engine/battle/misc.asm:L1` | In-source comment: `FormatMovesString` "formats a string at wMovesString that lists the moves at wMoves". | mf-7 |
 | `engine/battle/misc.asm:L2` | `FormatMovesString:` — the routine that builds the concatenated move-name list. | 03, mf-7 |
 | `engine/battle/misc.asm:L4` | `ld de, wMovesString` sets the copy destination to the move-name string buffer. | mf-7 |
@@ -81,9 +81,11 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `engine/debug/debug_party.asm:L24` | The `ELSE`-branch grant byte `db MEW, 20`, assembled into the retail build but never reached in normal play. | 03 |
 | `engine/debug/debug_party.asm:L34` | `PrepareNewGameDebug` is "dummy except in `_DEBUG`". | 04 |
 | `engine/debug/debug_party.asm:L158-159` | In a retail build `PrepareNewGameDebug` compiles to a bare `ret` (the `ELSE` branch), so the debug party list is never read in normal play. | 04 |
-| `engine/items/item_effects.asm:L1-16` | `UseItem_` computes an effect-handler address from item data and jumps to it via `jp hl`. | 03 |
+| `engine/events/cinnabar_lab.asm:L43-49` | Fossil selection: the chosen fossil maps to `AERODACTYL`/`OMANYTE`/`KABUTO`, loaded into register `b`, so the revival flow deals only in the three legitimate fossil species. | 04, mf-11 |
+| `engine/events/cinnabar_lab.asm:L52-53` | `ld a, b` / `ld [wFossilMon], a` — stores the selected fossil species to the one-byte `wFossilMon`. | 03, mf-11 |
+| `engine/items/item_effects.asm:L1-16` | `UseItem_` computes an effect-handler address from item data and jumps to it via `jp hl`. | 03, mf-4 |
 | `engine/items/item_effects.asm:L17-19` | `ItemUsePtrTable` — the item-effect dispatch table mapping each item id to its effect routine (e.g. `ItemUseBall`). | mf-4 |
-| `engine/items/item_effects.asm:L104` | `ItemUseBall` — the entry point for throwing a Poké Ball. | 02, mf-1, mf-2, mf-3, mf-4, mf-5, mf-6, mf-7, mf-8, mf-9, mf-10 |
+| `engine/items/item_effects.asm:L104` | `ItemUseBall` — the entry point for throwing a Poké Ball. | 02, mf-1, mf-2, mf-3, mf-4, mf-5, mf-6, mf-7, mf-8, mf-9, mf-10, mf-11 |
 | `engine/items/item_effects.asm:L106-109` | Out-of-battle guard: balls cannot be used when not in battle. | 02 |
 | `engine/items/item_effects.asm:L107-109` | Out-of-battle guard body: `ld a, [wIsInBattle]` / `and a` / `jp z, ItemUseNotTime`. | 02 |
 | `engine/items/item_effects.asm:L109` | `jp z, ItemUseNotTime` aborts ball use when not in a battle. | 02 |
@@ -100,9 +102,9 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `engine/items/item_effects.asm:L155-164` | Old Man branch: after the recheck it performs the guaranteed-capture name copy and jumps to `.captured`. | 02 |
 | `engine/items/item_effects.asm:L159-164` | Old Man branch of `ItemUseBall` restores `wPlayerName` from the wild-monster buffer (`hl = wGrassRate` source, `de = wPlayerName` dest); the in-source comment states the reverse. | 02, 03, mf-2 |
 | `engine/items/item_effects.asm:L166-175` | `.notOldManBattle` ghost-Marowak guard (`RESTLESS_SOUL` on `POKEMON_TOWER_6F`). | 02 |
-| `engine/items/item_effects.asm:L169-175` | Ghost-Marowak guard: `RESTLESS_SOUL` on `POKEMON_TOWER_6F` is uncatchable. | 02, glossary |
+| `engine/items/item_effects.asm:L169-175` | Ghost-Marowak guard: `RESTLESS_SOUL` on `POKEMON_TOWER_6F` is uncatchable. | glossary |
 | `engine/items/item_effects.asm:L174-175` | Ghost-Marowak path loads the can't-be-caught value (`$10`) and skips capture. | 02 |
-| `engine/items/item_effects.asm:L300-303` | Catch-rate comparison: `cp b` then `jr c, .failedToCapture`. | 02, glossary, mf-1, mf-2, mf-3, mf-4, mf-5, mf-6, mf-7, mf-8, mf-9, mf-10 |
+| `engine/items/item_effects.asm:L300-303` | Catch-rate comparison: `cp b` then `jr c, .failedToCapture`. | 02, glossary, mf-1, mf-2, mf-3, mf-4, mf-5, mf-6, mf-7, mf-8, mf-9, mf-10, mf-11 |
 | `engine/items/item_effects.asm:L305-308` | Auto-capture branch: when the intermediate value `W > 255` (`hQuotient + 2` nonzero), the ball captures unconditionally (`jr nz, .captured`) — so a catch-rate-255 target is a guaranteed capture. | 02, 03, glossary, mf-8 |
 | `engine/items/item_effects.asm:L310-316` | Second random comparison (Rand2): `call Random` then `cp` against `hQuotient + 3` → `jr c, .failedToCapture`. | 02 |
 | `engine/items/item_effects.asm:L318-321` | The `.captured` / `.failedToCapture` label region concluding the catch decision. | 02 |
@@ -111,7 +113,7 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `engine/items/item_effects.asm:L414-416` | The Poké Ball animation/result is stored to `wPokeBallAnimData` (`.setAnimData`). | 02 |
 | `engine/items/item_effects.asm:L2309-2310` | `BoxFullCannotThrowBall` — the abort path taken when both party and box are full. | 02 |
 | `engine/link/cable_club.asm:L4` | `CableClub_DoBattleOrTrade` drives the Colosseum/Trade Center link session. | mf-6 |
-| `engine/link/cable_club.asm:L131-135` | The link trade loads the player/enemy party-data blocks and exchanges them via `Serial_ExchangeBytes`. | 03, 04 |
+| `engine/link/cable_club.asm:L131-135` | The link trade loads the player/enemy party-data blocks and exchanges them via `Serial_ExchangeBytes`. | 03, 04, mf-6 |
 | `engine/link/cable_club.asm:L274-278` | Writes `wLinkState` (`LINK_STATE_TRADING` for a trade, `LINK_STATE_BATTLING` for a battle). | mf-6 |
 | `engine/link/cable_club.asm:L682` | `TradeCenter_Trade` — the Trade Center trade-execution routine. | mf-6 |
 | `engine/link/cable_club.asm:L800` | `call RemovePokemon` removes the traded-away Pokémon from the player's party. | mf-6 |
@@ -127,8 +129,8 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `engine/movie/oak_speech/oak_speech2.asm:L70-77` | The chosen player name is copied (`NAME_LENGTH` bytes) into `wNameBuffer` via `CopyData` during Oak's intro. | mf-2 |
 | `engine/movie/oak_speech/oak_speech2.asm:L192-214` | `GetDefaultName` walks the name list to the preset entry at index `a` (used when the player picks a default name). | mf-2 |
 | `engine/pokemon/bills_pc.asm:L95` | `BillsPC_` — Bill's PC box-storage entry point. | mf-5 |
-| `engine/pokemon/bills_pc.asm:L207` | `BillsPCDeposit` reads `wPartyCount` when depositing a Pokémon. | mf-5, mf-8 |
-| `engine/pokemon/bills_pc.asm:L256` | `BillsPCWithdraw` reads `wBoxCount` — the complementary withdraw path from Bill's PC. | mf-5, mf-8 |
+| `engine/pokemon/bills_pc.asm:L207` | `BillsPCDeposit` reads `wPartyCount` when depositing a Pokémon. | 03, mf-5, mf-8 |
+| `engine/pokemon/bills_pc.asm:L256` | `BillsPCWithdraw` reads `wBoxCount` — the complementary withdraw path from Bill's PC. | 03, mf-5, mf-8 |
 
 ## home/
 
@@ -136,6 +138,7 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 |--------|---------------------|---------|
 | `home/copy.asm:L15` | `CopyData::` — the label of the `bc`-length byte-copy routine. | mf-7 |
 | `home/copy.asm:L15-16` | `CopyData` copies `bc` bytes from `hl` (source) to `de` (destination). | 02, mf-2 |
+| `home/give.asm:L18-21` | `GivePokemon::` sets `wCurPartySpecies` from register `b` and the level from `c`, then grants the mon — writing whatever species byte it is given, with no fossil-species validation. | 03, 04, glossary, mf-11 |
 | `home/names2.asm:L86-88` | `ld de, wNameBuffer` / `ld bc, NAME_BUFFER_LENGTH` / `call CopyData` — `GetName` stages a fixed 20-byte copy of the move name into `wNameBuffer`. | 03, mf-7 |
 | `home/pics.asm:L11-23` | `cp MEW` graphics-bank selection (Mew's pic is in bank `$1`); a loader, not a placement into an obtainable source. | 04 |
 | `home/pokemon.asm:L399-400` | `cp MEW` special-cases base-stats loading; a loader, not a placement into an obtainable source. | 04 |
@@ -163,12 +166,13 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `ram/wram.asm:L563` | `wEnemyMonUnmodifiedSpecial` — the enemy's unmodified Special-stat word within the union. | mf-1 |
 | `ram/wram.asm:L580` | `wEngagedTrainerClass` — the engaged-trainer class byte aliasing the enemy-mon union region. | mf-1 |
 | `ram/wram.asm:L899-906` | The 20-byte `UNION` where `wNameBuffer` (name staging) aliases `wMoveData` (in-battle move data). | 03, glossary, mf-7 |
-| `ram/wram.asm:L1101` | `wCurPartySpecies` — the current party/encounter species byte. | 02, glossary, mf-4 |
+| `ram/wram.asm:L1101` | `wCurPartySpecies` — the current party/encounter species byte. | 02, glossary |
 | `ram/wram.asm:L1101-1103` | `wCurPartySpecies`, `wCurItem`, and `wCurListMenuItem` share one WRAM address (a `UNION` alias). | mf-4 |
 | `ram/wram.asm:L1193` | `wEnemyMonSpecies2` — the enemy species byte the wild-vs-trainer branch tests. | mf-1 |
 | `ram/wram.asm:L1198` | `wEnemyMon` — the enemy Pokémon battle struct. | 02, mf-1, mf-4, mf-7 |
 | `ram/wram.asm:L1563` | `wMovesString:: ds NUM_MOVES * MOVE_NAME_LENGTH` — the concatenated move-name string buffer that `FormatMovesString` writes into. | 03, mf-7 |
 | `ram/wram.asm:L1715` | `wPlayerName` (`ds NAME_LENGTH`) — the player-name buffer. | 02, glossary, mf-2 |
+| `ram/wram.asm:L2065` | `wFossilMon:: db` — the one-byte store of the fossil-revival species that the hand-over script passes to `GivePokemon`. | 03, 04, glossary, mf-11 |
 | `ram/wram.asm:L2144-2155` | The `UNION` where `wGrassRate`/`wGrassMons` alias `wLinkEnemyTrainerName`, so the Old Man name save lands in the wild-encounter buffer. | 02, mf-2 |
 | `ram/wram.asm:L2145-2151` | `wGrassRate`/`wGrassMons`/`wWaterRate`/`wWaterMons` — the wild-encounter data buffers. | 02, glossary, mf-2 |
 
@@ -176,6 +180,7 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 
 | Anchor | What it establishes | Used by |
 |--------|---------------------|---------|
+| `scripts/CinnabarLabFossilRoom.asm:L77-80` | The fossil-room hand-over reloads `wFossilMon` into `b`, sets level 30 in `c`, and `call GivePokemon` — passing the stored byte as the granted species with no validation. | 03, 04, glossary, mf-11 |
 | `scripts/ViridianCity.asm:L62-83` | The Old Man catch tutorial sets `BATTLE_TYPE_OLD_MAN` from a normal input path. | 02, 03, glossary, mf-2 |
 
 ## text/

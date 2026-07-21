@@ -1,6 +1,6 @@
 # Game mechanics reference
 
-This chapter is the code-cited technical foundation the ten method chapters build on. It documents the shared primitives every candidate mechanism (MF-1 … MF-10) is evaluated against: the species index, the random number generator, wild-encounter generation, the catch algorithm and its guards, the battle-data and name RAM buffers, and the character codec. Each primitive is grounded in a specific line of this checkout of the pret **pokered** disassembly, so that the per-method chapters can reason about whether species `$15` (Mew) can be placed into a catchable battle or a party/box slot without re-deriving the mechanics here.
+This chapter is the code-cited technical foundation the eleven method chapters build on. It documents the shared primitives every candidate mechanism (MF-1 … MF-11) is evaluated against: the species index, the random number generator, wild-encounter generation, the catch algorithm and its guards, the battle-data and name RAM buffers, and the character codec. Each primitive is grounded in a specific line of this checkout of the pret **pokered** disassembly, so that the per-method chapters can reason about whether species `$15` (Mew) can be placed into a catchable battle or a party/box slot without re-deriving the mechanics here.
 
 This is a neutral description of how the game works. Where a primitive happens to be the technical basis of a publicly documented glitch, that fact is noted and deferred to the [novelty verification](03-novelty-verification.md); no glitch is presented here as novel. Every sentence that asserts game behavior ends with an inline `[path:Lx-Ly]` citation, per requirement R3, and the consolidated anchor list lives in the [citation index](citation-index.md).
 
@@ -12,7 +12,7 @@ This is a neutral description of how the game works. Where a primitive happens t
 	const MEW                ; $15
 ```
 
-- Every acquisition mechanism must ultimately place this one byte, `$15`, into a species field that the battle or storage code reads, so the index value is the quantity all ten method chapters are chasing `[constants/pokemon_constants.asm:L30]`.
+- Every acquisition mechanism must ultimately place this one byte, `$15`, into a species field that the battle or storage code reads, so the index value is the quantity all eleven method chapters are chasing `[constants/pokemon_constants.asm:L30]`.
 
 Because `$15` is a fixed constant, "obtaining Mew" reduces to whether any input-reachable code path can write `$15` into a species field such as `wCurPartySpecies` or `wEnemyMonSpecies2` `[constants/pokemon_constants.asm:L30]`. The sections below describe every primitive that reads or writes those fields.
 

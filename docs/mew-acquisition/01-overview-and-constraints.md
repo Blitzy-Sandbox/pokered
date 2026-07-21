@@ -19,7 +19,7 @@ The user's request imposes four binding requirements. They are restated here and
 | R1 | Novelty — the method must be novel and not currently disclosed on the internet. | No technique already published online may be presented as new. The Mew glitch (a.k.a. long-range trainer glitch) and the Trainer-Fly glitch are explicitly named as excluded, and they are illustrative of a broader disclosed corpus — the Ditto/special-stat tricks, arbitrary code execution (ACE), save/box corruption, and the Old Man / Cinnabar name-buffer encounter — all catalogued and excluded in [Novelty verification](03-novelty-verification.md). |
 | R2 | Inputs only — catch Mew using only inputs provided by the game. | The procedure must be reachable using standard in-game controller inputs alone. Source edits, ROM patches, cheat devices, memory pokes, save-file surgery, and non-standard peripherals are all disallowed; the exact boundary is fixed in the next section. |
 | R3 | Mandatory citations — every assertion cites a code file and line number. | Every sentence asserting game behavior ends with an inline `[path:Lx-Ly]` citation to this disassembly. Wikis, forums, and speedrun references may inform the R1 disclosed-corpus baseline but are never cited as evidence of how the game behaves. |
-| R4 | Completeness — if multiple methods are found, list every single one. | The guide enumerates all ten candidate mechanism families (MF-1 … MF-10) surfaced by a dated, bounded public-corpus search and adjudicates each against R1 and R2; none is left as "pending" or "to be discovered." The set is exactly those the search surfaced, not a claim of internet-wide completeness. |
+| R4 | Completeness — if multiple methods are found, list every single one. | The guide enumerates all eleven candidate mechanism families (MF-1 … MF-11) surfaced by a dated, bounded public-corpus search and adjudicates each against R1 and R2; none is left as "pending" or "to be discovered." The set is exactly those the search surfaced, not a claim of internet-wide completeness. |
 
 The two glitches named in R1 are illustrative, not the full exclusion set: R1 excludes the entire already-disclosed corpus, of which those two are only the best-known members.
 
@@ -68,7 +68,7 @@ Taken together, these entries show that Mew is defined as a complete, fully spec
 Read the chapters in order; each builds on the shared mechanics established earlier.
 
 - [Game mechanics reference](02-game-mechanics-reference.md) — the shared primitives (species index, RNG, wild-encounter generation, catch algorithm, RAM buffers, character codec) that every method chapter is evaluated against.
-- The ten candidate mechanism families, one chapter each, under `methods/`:
+- The eleven candidate mechanism families, one chapter each, under `methods/`:
   - [MF-1 — special-stat / interrupted-battle encounter](methods/mf-1-special-stat-encounter.md)
   - [MF-2 — Old Man / Cinnabar name-buffer encounter](methods/mf-2-cinnabar-name-buffer.md)
   - [MF-3 — RNG manipulation of encounters](methods/mf-3-rng-manipulation.md)
@@ -79,6 +79,7 @@ Read the chapters in order; each builds on the shared mechanics established earl
   - [MF-8 — remaining HP glitch](methods/mf-8-remaining-hp-glitch.md)
   - [MF-9 — out-of-bounds LOL glitch (oobLG)](methods/mf-9-out-of-bounds-lol-glitch.md)
   - [MF-10 — block out-of-bounds LOL glitch (blockoobLG)](methods/mf-10-blockooblg.md)
+  - [MF-11 — international fossil conversion glitch](methods/mf-11-fossil-conversion.md)
 - [Novelty verification](03-novelty-verification.md) — the disclosed-corpus baseline and the per-method novelty verdicts.
 - [Conclusion and limitations](04-conclusion-and-limitations.md) — the synthesized gap-analysis outcome and the guide's honesty statement.
 - [Glossary](glossary.md) — terminology used throughout (species index, Special stat, DV, RNG seed, name buffer, ACE, and more).

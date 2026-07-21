@@ -40,6 +40,7 @@ This guide is governed by four requirements, summarized here and detailed in [01
   - [MF-8 - Remaining HP glitch](methods/mf-8-remaining-hp-glitch.md)
   - [MF-9 - Out-of-bounds LOL glitch (oobLG)](methods/mf-9-out-of-bounds-lol-glitch.md)
   - [MF-10 - Block out-of-bounds LOL glitch (blockoobLG)](methods/mf-10-blockooblg.md)
+  - [MF-11 - International fossil conversion glitch](methods/mf-11-fossil-conversion.md)
 - [03 - Novelty verification](03-novelty-verification.md)
 - [04 - Conclusion and limitations](04-conclusion-and-limitations.md)
 - [Glossary](glossary.md)
