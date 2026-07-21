@@ -1,0 +1,88 @@
+# Conclusion and limitations
+
+This is the payoff chapter of the guide, and its value is the rigor of a negative result rather than the disclosure of a trick. The exhaustive analysis in the preceding chapters converges on a single finding: Mew is fully implemented in the pret **pokered** disassembly, yet it is placed in no location that normal play can reach, so every input-only path to species `$15` is either table-bounded `[engine/battle/wild_encounters.asm:L74-80]`, dead debug code `[engine/debug/debug_party.asm:L1]`, or a member of the already-disclosed glitch corpus `[constants/pokemon_constants.asm:L30]`. As with every other chapter, each sentence that asserts game behavior ends with a `[path:Lx-Ly]` citation into this checkout, and the consolidated anchor list lives in the [citation index](citation-index.md).
+
+## Gap analysis: implemented but unplaced
+
+Mew is a fully specified species. It has a name, `dname "MEW"` `[data/pokemon/names.asm:L23]`; a palette, `db PAL_MEWMON ; MEW` `[data/pokemon/palettes.asm:L154]`; a complete base-stats entry beginning `db DEX_MEW` `[data/pokemon/base_stats/mew.asm:L1]` with a catch rate of 45 `[data/pokemon/base_stats/mew.asm:L7]`; and a reserved species index, `const MEW ; $15` `[constants/pokemon_constants.asm:L30]`. By every measure of definition, the game knows what Mew is.
+
+What the game lacks is any *placement* of that species into a source a player can reach. The distinction between a definition and a placement is the crux of this chapter: a definition tells the engine how to render and simulate species `$15` once it is the current species, whereas a placement is what writes `$15` into a species field through normal play `[constants/pokemon_constants.asm:L30]`. Two routines that mention `MEW` are easily mistaken for placements but are in fact only *loaders*. The graphics-bank selector compares the current species against `MEW` to route Mew's sprite to bank `$1` `[home/pics.asm:L11-23]`, and the base-stats loader special-cases `MEW` with `cp MEW` / `jr z, .mew` to read its stats `[home/pokemon.asm:L399-400]`. Both run only *if Mew is already the current species*; they route data, they do not introduce Mew, and their presence merely corroborates that Mew was appended to the roster late and handled specially `[home/pics.asm:L11-23]`. The Pokémon Mansion journals likewise mention Mew as flavor narrative — "newly discovered #MON, MEW" `[text/PokemonMansion2F.asm:L32]` and "MEW gave birth" `[text/PokemonMansion3F.asm:L33]` — which is story text, not a species placement.
+
+An exhaustive audit of the `MEW` symbol across the tree makes the gap explicit. The table below records every occurrence and whether it constitutes an obtainable placement.
+
+| Occurrence | Kind | Obtainable? |
+|------------|------|-------------|
+| `dname "MEW"` `[data/pokemon/names.asm:L23]` | Definition (name) | No — definition, not a placement |
+| `db PAL_MEWMON ; MEW` `[data/pokemon/palettes.asm:L154]` | Definition (palette) | No — definition, not a placement |
+| `db DEX_MEW` … catch rate 45 `[data/pokemon/base_stats/mew.asm:L1]`, `[data/pokemon/base_stats/mew.asm:L7]` | Definition (base stats) | No — definition, not a placement |
+| `const MEW ; $15` `[constants/pokemon_constants.asm:L30]` | Definition (species index) | No — definition, not a placement |
+| `cp MEW` graphics-bank selection `[home/pics.asm:L11-23]` | Loader (routes graphics if Mew is current) | No — loader, not a placement |
+| `cp MEW` / `jr z, .mew` base-stats special case `[home/pokemon.asm:L399-400]` | Loader (routes stats if Mew is current) | No — loader, not a placement |
+| `db MEW, 5` / `db MEW, 20` in `DebugNewGameParty` `[engine/debug/debug_party.asm:L15-24]` | Dead code (only in-ROM grant) | No — unreferenced except `_DEBUG` `[engine/debug/debug_party.asm:L1]` |
+| Journal flavor text `[text/PokemonMansion2F.asm:L32]`, `[text/PokemonMansion3F.asm:L33]` | Flavor narrative | No — story text, not a placement |
+| Any table in `data/wild/*` | Wild-encounter tables | No — no `MEW` entry; selection is table-bounded `[engine/battle/wild_encounters.asm:L74-80]` |
+| `TradeMons` `[data/events/trades.asm:L18-27]` | In-game trade table | No — ten fixed trades, none is Mew |
+| Gift / static / prize scripts | Event placements | No — an audit returns no `MEW` placement |
+
+The decisive results are the negatives. Mew appears in no wild-encounter table, so the strictly table-bounded wild-species read can never select it `[engine/battle/wild_encounters.asm:L74-80]`. Mew appears in none of the ten fixed NPC trades `[data/events/trades.asm:L18-27]`. And Mew appears in neither of the two Game Corner prize-Pokémon lists `[data/events/prizes.asm:L9-42]`, nor in any gift or static-encounter script anywhere in the event data, which the same `MEW`-symbol audit confirms. The only in-ROM code that writes `MEW` into a party is the debug party list, examined in the next section, which retail play cannot reach `[engine/debug/debug_party.asm:L1]`.
+
+The following diagram maps the audit: Mew is defined but not placed, every obtainable source is checked for `$15` and returns none, and the sole in-ROM grant is dead code.
+
+```mermaid
+flowchart TD
+    subgraph IMPL["Mew IS implemented"]
+        A["names.asm L23 / palettes.asm L154 / mew.asm L1 / pokemon_constants.asm L30"]
+    end
+    subgraph SOURCES["Normal obtainable sources"]
+        B["Wild tables: data/wild/*"]
+        C["In-game trades: data/events/trades.asm"]
+        D["Prizes / gifts / statics"]
+    end
+    subgraph DEAD["Dead code (retail)"]
+        E["DebugNewGameParty db MEW - _DEBUG only"]
+    end
+    A -. "defined, not placed" .-> SOURCES
+    B --> F{"Contains MEW ($15)?"}
+    C --> F
+    D --> F
+    F -->|"No - audit returns none"| G["Mew unobtainable by normal play"]
+    E -->|"unreferenced except _DEBUG"| G
+    G --> H["Every input-only path to $15 is table-bounded, dead code, or a disclosed glitch"]
+```
+
+## The dead debug path (why it is not a method)
+
+The only place in the ROM that grants Mew directly is the debug new-game party. The data list `DebugNewGameParty` contains `db MEW, 5` in a `_DEBUG` build and `db MEW, 20` otherwise `[engine/debug/debug_party.asm:L15-24]`. This list is read only by `SetDebugNewGameParty`, whose own source comment marks it "unreferenced except in `_DEBUG`" `[engine/debug/debug_party.asm:L1]`, and that routine is in turn called only by `PrepareNewGameDebug`, marked "dummy except in `_DEBUG`" `[engine/debug/debug_party.asm:L34]`. In a retail build the body of `PrepareNewGameDebug` compiles to a bare `ret` `[engine/debug/debug_party.asm:L158-159]`, so nothing ever reads the debug party list during normal play. The `db MEW, 20` byte is assembled into the retail ROM, yet the code that would copy it into the player's party is never executed `[engine/debug/debug_party.asm:L15-24]`.
+
+This path is therefore documented as an **exclusion**, not a method. Reaching it requires assembling the source with the `_DEBUG` flag defined, which is a build-time change rather than one of the legal in-game inputs permitted by the inputs-only restriction (R2) `[engine/debug/debug_party.asm:L34]`. To be unambiguous: this guide does **not** instruct the reader to define `_DEBUG`, patch the source, or rebuild the ROM as a way to obtain Mew — doing so would violate the inputs-only restriction and the no-game-changes rule, and it is explicitly out of scope. The debug party is evidence that Mew was implemented, not a route by which a player can catch it `[engine/debug/debug_party.asm:L1]`.
+
+## Why RNG and name-buffer paths cannot yield Mew
+
+Two input-reachable pipelines are the natural first suspects for producing an unusual species, and both are bounded away from `$15` by the code itself. Neither is a glitch to be performed; each is a proof of impossibility, carried in full in its own chapter.
+
+The wild-encounter pipeline reads its species byte directly from the current map's fixed encounter table and stores it to `wCurPartySpecies` and `wEnemyMonSpecies2`, with no arithmetic that could reach a value absent from that table `[engine/battle/wild_encounters.asm:L74-80]`. Because the random-number generator only selects *which* table slot is read and never contributes the species value itself, no input timing — however precise — can synthesize a species index that the table does not already contain, and no map's table contains Mew `[engine/battle/wild_encounters.asm:L74-80]`. The full bounding argument is set out in [MF-3: RNG manipulation](methods/mf-3-rng-manipulation.md).
+
+The Old Man / Cinnabar name-buffer pipeline reads leftover name bytes as wild-encounter data, so the species it can produce are exactly the byte values a name can contain. The character map reserves bytes `$00`–`$17` as `TX_*` text-control codes rather than typeable glyphs, and every typeable name glyph encodes to a high byte at or above `$7f` `[constants/charmap.asm:L1]`. Mew's index `$15` lies inside that low control-code region, so it can never be produced by a name character, which places it out of reach of this pipeline `[constants/charmap.asm:L1]`. That family is disclosed as well, and the full analysis and data-flow diagram are in [MF-2: Old Man / Cinnabar name-buffer](methods/mf-2-cinnabar-name-buffer.md).
+
+## Honesty statement
+
+The known glitch space for obtaining Mew is already publicly documented, and this guide adjudicates novelty against that public corpus as it stood at authoring time. Within that boundary the honest outcome is stated plainly: **no genuinely undisclosed, inputs-only method of catching species `$15` `[constants/pokemon_constants.asm:L30]` was found, and this guide fabricates none.** Every candidate mechanism family — the six method-chapter families MF-1 through MF-6, together with the added move-name-buffer overflow family MF-7 — was run through the same three gates and is recorded with a verdict in the [novelty verification](03-novelty-verification.md).
+
+Every input-reachable path to species `$15` falls into one of three buckets, none of which yields a new capture method `[constants/pokemon_constants.asm:L30]`:
+
+- Table-bounded and impossible: the wild-encounter and RNG paths can only select a species already present in a map's table, and Mew is in none `[engine/battle/wild_encounters.asm:L74-80]`.
+- Dead debug code: the only in-ROM `db MEW` grant is unreferenced in retail builds and is a build-time artifact, not an input `[engine/debug/debug_party.asm:L1]`.
+- Disclosed and therefore R1-excluded: the special-stat / interrupted-battle family, the name-buffer family, arbitrary code execution, save/box corruption, and the move-name-buffer overflow are all in the public corpus and are documented only as contrast, as tabulated in the [novelty verification](03-novelty-verification.md).
+
+The guide's substantive value is the rigor with which this negative result is grounded in source, not a claim to a secret technique.
+
+## Optional reader verification (emulator)
+
+A reader who wishes to confirm any behavioral claim empirically may build and run the game using the project's existing, unmodified toolchain; doing so is not part of authoring this guide, and it must not modify the source, the ROM, or save data. The commands below are given for context only. The reference ROM is produced with `make` `[INSTALL.md:L148]`, and its byte-exact identity can be checked with `make compare`, which runs `sha1sum -c roms.sha1` `[Makefile:L96-97]`. A `make DEBUG=1` build flag exists and exposes the `_DEBUG`-gated code such as the debug party `[Makefile:L104-106]`, but it is named here only as illustration — the debug path is not input-reachable and is not a method for obtaining Mew, as established above `[engine/debug/debug_party.asm:L34]`. The build toolchain is pinned to RGBDS `1.0.1` `[.rgbds-version:L1]`.
+
+## See also
+
+- [Novelty verification](03-novelty-verification.md)
+- [Game mechanics reference](02-game-mechanics-reference.md)
+- [Guide home](README.md)
+- [Citation index](citation-index.md)
