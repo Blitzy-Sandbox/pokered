@@ -16,7 +16,6 @@
 - The one legitimate primitive the technique depends on is the guaranteed capture of a catch-rate-255 base Pokémon. In `ItemUseBall`, after the catch-rate comparison `[engine/items/item_effects.asm:L300-303]`, an intermediate value greater than 255 takes the unconditional capture branch `[engine/items/item_effects.asm:L305-308]`:
 
 ```asm
-; If W > 255, the ball captures the Pokémon.
 	ldh a, [hQuotient + 2]
 	and a
 	jr nz, .captured

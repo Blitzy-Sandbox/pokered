@@ -4,7 +4,7 @@ This guide investigates, with exhaustive citations to the pret **pokered** disas
 
 ## Honesty and limitations
 
-> **This guide presents no fabricated "guaranteed-novel" method.** The known glitch space for obtaining Mew is already publicly disclosed, and novelty is assessed against that public corpus at the time of authoring. The guide's value is a rigorous, code-cited analysis — not a secret trick or clickbait.
+> **This guide presents no fabricated "guaranteed-novel" method.** The known glitch space for obtaining Mew is already publicly disclosed, and novelty is assessed against that public corpus at the time of authoring (search date 2026-07-21, matching the [novelty verification](03-novelty-verification.md)). The guide's value is a rigorous, code-cited analysis — not a secret trick or clickbait.
 
 - The central finding is that Mew is **fully implemented yet, across every obtainable source audited in this checkout, placed in no location a player can reach**: every path to species `$15` that uses only legitimate inputs turns out to be table-bounded (an unmodified encounter table can never select it), reachable only through debug code whose reader is unreferenced in the retail builds `[engine/debug/debug_party.asm:L1]`, a member of the already-disclosed glitch corpus, or a transfer-only link trade that merely relays a Mew from another cartridge.
 - No candidate is presented as new unless it is both input-reachable and absent from the public corpus; where no such candidate exists, the guide says so plainly rather than inventing one.

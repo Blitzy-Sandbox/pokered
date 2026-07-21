@@ -116,9 +116,7 @@ Once a wild Pokémon is on screen, throwing a ball runs `ItemUseBall` `[engine/i
 ```asm
 	ld hl, wGrassRate
 	ld de, wPlayerName
-	ld bc, NAME_LENGTH
 	call CopyData
-	jp .captured
 ```
 
 - The genuine seed of the disclosed Cinnabar/Missingno. family is the earlier tutorial name save — `wPlayerName` copied into `wLinkEnemyTrainerName`, which shares memory with `wGrassRate` `[engine/battle/core.asm:L2030-2033]`, `[ram/wram.asm:L2144-2155]`; that data flow is analyzed and shown to be `$15`-bounded in [mf-2](methods/mf-2-cinnabar-name-buffer.md) and adjudicated in the [novelty verification](03-novelty-verification.md), not presented here as novel.

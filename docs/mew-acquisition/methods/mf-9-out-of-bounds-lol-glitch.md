@@ -16,7 +16,6 @@
 - Once the opponent-species byte is set, `InitOpponent` loads it as the current species and copies it into the enemy-species buffer `[engine/battle/core.asm:L6647-6650]`:
 
 ```asm
-InitOpponent:
 	ld a, [wCurOpponent]
 	ld [wCurPartySpecies], a
 	ld [wEnemyMonSpecies2], a

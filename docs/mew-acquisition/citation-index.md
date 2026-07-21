@@ -13,12 +13,18 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `constants/charmap.asm:L12` | The `"@"` string terminator maps to byte `$50`. | 02, glossary, mf-2 |
 | `constants/charmap.asm:L63` | The space character maps to byte `$7f`. | 02, 03, glossary, mf-2 |
 | `constants/charmap.asm:L92` | The letter `A` maps to byte `$80`. | 02, glossary, mf-2 |
+| `constants/charmap.asm:L92-117` | Uppercase `A`–`Z` occupy the contiguous high-byte glyph range `$80`–`$99`, so no typeable name character maps to a low byte such as `$15`. | mf-2 |
 | `constants/charmap.asm:L117` | The letter `Z` maps to byte `$99`. | 02, glossary, mf-2 |
 | `constants/charmap.asm:L126` | The letter `a` maps to byte `$a0`. | glossary, mf-2 |
 | `constants/charmap.asm:L187` | The digit `0` maps to byte `$f6`. | glossary, mf-2 |
+| `constants/player_constants.asm:L1-20` | `NUM_PLAYER_NAMES` (3) and the build-specific preset player-name strings selectable at name entry. | mf-2 |
 | `constants/pokemon_constants.asm:L30` | `const MEW` assigns Mew the internal species index `$15` (21 decimal). | README, 01, 02, 03, 04, glossary, mf-1, mf-2, mf-3, mf-4, mf-5, mf-6, mf-7, mf-8, mf-9, mf-10 |
+| `constants/pokemon_constants.asm:L97` | `const DRATINI` assigns Dratini the internal species index `$58`. | mf-10 |
+| `constants/pokemon_constants.asm:L99` | `const KABUTO` assigns Kabuto the internal species index `$5A`. | mf-10 |
+| `constants/pokemon_data_constants.asm:L58-60` | `PARTY_LENGTH` (6) and `MONS_PER_BOX` (20) — the party-full and box-full thresholds tested before a ball is thrown. | 02 |
 | `constants/pokemon_data_constants.asm:L97-98` | `NUM_WILDMONS EQU 10` — every map's wild table holds exactly ten slots. | mf-3 |
 | `constants/serial_constants.asm:L25` | `LINK_STATE_BATTLING EQU $04` marks the in-link-battle state. | 02, glossary, mf-6 |
+| `constants/text_constants.asm:L1` | `PLAYER_NAME_LENGTH EQU 8` — a typed player name occupies at most `PLAYER_NAME_LENGTH - 1` (7) characters plus the terminator. | 02, mf-2 |
 | `constants/text_constants.asm:L3` | `NAME_LENGTH EQU 11` sets the player-name buffer length. | 02, glossary, mf-2 |
 | `constants/text_constants.asm:L8` | `DEF NAME_BUFFER_LENGTH EQU 20` — the 20-byte name/move staging buffer length. | 03, mf-7 |
 | `constants/trainer_constants.asm:L1` | `DEF OPP_ID_OFFSET EQU 200` — a species byte below 200 is a wild Pokémon; 200 and above is a trainer class. | mf-1, mf-9, mf-10 |
@@ -29,6 +35,7 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 |--------|---------------------|---------|
 | `data/events/prizes.asm:L9-42` | The two Game Corner prize-Pokémon lists (`PrizeMenuMon1Entries`/`PrizeMenuMon2Entries`); none of the prize species is Mew. | 04 |
 | `data/events/trades.asm:L18-27` | The ten fixed NPC `TradeMons` entries; none of them is Mew. | 04, mf-6 |
+| `data/player/names_list.asm:L3-9` | `DefaultNamesPlayerList` — the `"NEW NAME"` entry and the `NUM_PLAYER_NAMES` preset player names; deterministic ROM data, none of which is a species byte. | 02, 03, 04, glossary, mf-2 |
 | `data/pokemon/base_stats/mew.asm:L1` | `db DEX_MEW` — Mew has a complete base-stats entry, i.e. it is fully implemented. | 04 |
 | `data/pokemon/base_stats/mew.asm:L6` | Mew's type is `PSYCHIC`. | 01 |
 | `data/pokemon/base_stats/mew.asm:L6-13` | Mew's base-stats body from its `PSYCHIC` type (L6) through its level-1 `POUND`-only learnset (L13). | 01 |
@@ -47,7 +54,9 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `engine/battle/core.asm:L2024-2029` | In-source comment: the Old Man tutorial temporarily saves the player name in `wLinkEnemyTrainerName` (== `wGrassRate`), and a Cinnabar/Route 21 oversight leaves it in the wild buffer (the MissingNo. glitch). | mf-2 |
 | `engine/battle/core.asm:L2030-2033` | Old Man tutorial setup copies `wPlayerName` (hl, source) into `wLinkEnemyTrainerName` (de, destination) via `CopyData`, seeding the wild-encounter buffer with name bytes. | 02, 03, mf-2 |
 | `engine/battle/core.asm:L3309` | `IsGhostBattle` determines whether the current battle is against an unidentified ghost. | 02 |
+| `engine/battle/core.asm:L6138-6141` | Enemy level and stats are copied (`1 + NUM_STATS * 2` bytes) into the `wEnemyMonUnmodified*` mirror via `CopyData`. | mf-1 |
 | `engine/battle/core.asm:L6543-6548` | `BattleRandom` uses the shared PRNG only when `wLinkState == LINK_STATE_BATTLING`; otherwise it falls through via `jp nz, Random`. | 02, glossary, mf-1, mf-6 |
+| `engine/battle/core.asm:L6642` | `InitBattle` — the battle-entry point that leads into wild-encounter setup. | 02 |
 | `engine/battle/core.asm:L6647-6650` | `InitOpponent` copies `wCurOpponent` into `wCurPartySpecies` and `wEnemyMonSpecies2`. | 03, mf-1, mf-9, mf-10 |
 | `engine/battle/core.asm:L6664` | `callfar TryDoWildEncounter` triggers wild-encounter generation from the battle-entry path. | 02, mf-1, mf-3 |
 | `engine/battle/core.asm:L6674-6676` | Wild-vs-trainer branch: `ld a, [wEnemyMonSpecies2]` / `sub OPP_ID_OFFSET` / `jp c, InitWildBattle` — a species byte below 200 starts a wild battle with that index. | mf-1, mf-9, mf-10 |
@@ -73,28 +82,50 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `engine/debug/debug_party.asm:L34` | `PrepareNewGameDebug` is "dummy except in `_DEBUG`". | 04 |
 | `engine/debug/debug_party.asm:L158-159` | In a retail build `PrepareNewGameDebug` compiles to a bare `ret` (the `ELSE` branch), so the debug party list is never read in normal play. | 04 |
 | `engine/items/item_effects.asm:L1-16` | `UseItem_` computes an effect-handler address from item data and jumps to it via `jp hl`. | 03 |
-| `engine/items/item_effects.asm:L18` | `ItemUsePtrTable` dispatches each item id to its effect routine. | mf-4 |
+| `engine/items/item_effects.asm:L17-19` | `ItemUsePtrTable` — the item-effect dispatch table mapping each item id to its effect routine (e.g. `ItemUseBall`). | mf-4 |
 | `engine/items/item_effects.asm:L104` | `ItemUseBall` — the entry point for throwing a Poké Ball. | 02, mf-1, mf-2, mf-3, mf-4, mf-5, mf-6, mf-7, mf-8, mf-9, mf-10 |
 | `engine/items/item_effects.asm:L106-109` | Out-of-battle guard: balls cannot be used when not in battle. | 02 |
+| `engine/items/item_effects.asm:L107-109` | Out-of-battle guard body: `ld a, [wIsInBattle]` / `and a` / `jp z, ItemUseNotTime`. | 02 |
+| `engine/items/item_effects.asm:L109` | `jp z, ItemUseNotTime` aborts ball use when not in a battle. | 02 |
 | `engine/items/item_effects.asm:L111-113` | Trainer-mon guard: balls cannot catch a trainer's Pokémon. | 02 |
+| `engine/items/item_effects.asm:L113` | `jp nz, ThrowBallAtTrainerMon` diverts the throw when the target is a trainer's Pokémon. | 02 |
+| `engine/items/item_effects.asm:L115-118` | Old Man battle-type check (`wBattleType` == 1) branches past the party/box-full test. | 02 |
 | `engine/items/item_effects.asm:L115-125` | Old Man battle skips the party/box-full check. | 02 |
+| `engine/items/item_effects.asm:L120-122` | Party-full test: `ld a, [wPartyCount]` / `cp PARTY_LENGTH`. | 02 |
+| `engine/items/item_effects.asm:L120-125` | Party-and-box-full rejection block guarding the throw. | 02 |
+| `engine/items/item_effects.asm:L123-125` | Box-full test: `ld a, [wBoxCount]` / `cp MONS_PER_BOX` → `BoxFullCannotThrowBall`. | 02 |
 | `engine/items/item_effects.asm:L149-153` | Ghost-battle branch: `callfar IsGhostBattle` then `jp z` marks the target uncatchable. | 02 |
+| `engine/items/item_effects.asm:L152-153` | Ghost branch loads the can't-be-caught value (`$10`) and skips the capture math. | 02 |
+| `engine/items/item_effects.asm:L155-157` | Old Man recheck: `ld a, [wBattleType]` / `dec a` / `jr nz, .notOldManBattle`. | 02 |
+| `engine/items/item_effects.asm:L155-164` | Old Man branch: after the recheck it performs the guaranteed-capture name copy and jumps to `.captured`. | 02 |
 | `engine/items/item_effects.asm:L159-164` | Old Man branch of `ItemUseBall` restores `wPlayerName` from the wild-monster buffer (`hl = wGrassRate` source, `de = wPlayerName` dest); the in-source comment states the reverse. | 02, 03, mf-2 |
+| `engine/items/item_effects.asm:L166-175` | `.notOldManBattle` ghost-Marowak guard (`RESTLESS_SOUL` on `POKEMON_TOWER_6F`). | 02 |
 | `engine/items/item_effects.asm:L169-175` | Ghost-Marowak guard: `RESTLESS_SOUL` on `POKEMON_TOWER_6F` is uncatchable. | 02, glossary |
+| `engine/items/item_effects.asm:L174-175` | Ghost-Marowak path loads the can't-be-caught value (`$10`) and skips capture. | 02 |
 | `engine/items/item_effects.asm:L300-303` | Catch-rate comparison: `cp b` then `jr c, .failedToCapture`. | 02, glossary, mf-1, mf-2, mf-3, mf-4, mf-5, mf-6, mf-7, mf-8, mf-9, mf-10 |
 | `engine/items/item_effects.asm:L305-308` | Auto-capture branch: when the intermediate value `W > 255` (`hQuotient + 2` nonzero), the ball captures unconditionally (`jr nz, .captured`) — so a catch-rate-255 target is a guaranteed capture. | 02, 03, glossary, mf-8 |
+| `engine/items/item_effects.asm:L310-316` | Second random comparison (Rand2): `call Random` then `cp` against `hQuotient + 3` → `jr c, .failedToCapture`. | 02 |
+| `engine/items/item_effects.asm:L318-321` | The `.captured` / `.failedToCapture` label region concluding the catch decision. | 02 |
+| `engine/items/item_effects.asm:L321` | The `.failedToCapture` label — the miss path of the catch decision. | 02 |
 | `engine/items/item_effects.asm:L395-412` | Shake-count determination (0–3 shakes) from the capture quotient. | 02, glossary |
 | `engine/items/item_effects.asm:L414-416` | The Poké Ball animation/result is stored to `wPokeBallAnimData` (`.setAnimData`). | 02 |
+| `engine/items/item_effects.asm:L2309-2310` | `BoxFullCannotThrowBall` — the abort path taken when both party and box are full. | 02 |
 | `engine/link/cable_club.asm:L4` | `CableClub_DoBattleOrTrade` drives the Colosseum/Trade Center link session. | mf-6 |
 | `engine/link/cable_club.asm:L131-135` | The link trade loads the player/enemy party-data blocks and exchanges them via `Serial_ExchangeBytes`. | 03, 04 |
 | `engine/link/cable_club.asm:L274-278` | Writes `wLinkState` (`LINK_STATE_TRADING` for a trade, `LINK_STATE_BATTLING` for a battle). | mf-6 |
+| `engine/link/cable_club.asm:L682` | `TradeCenter_Trade` — the Trade Center trade-execution routine. | mf-6 |
+| `engine/link/cable_club.asm:L800` | `call RemovePokemon` removes the traded-away Pokémon from the player's party. | mf-6 |
+| `engine/link/cable_club.asm:L816-817` | `call CopyData` loads the received `wLoadedMon`, then `AddEnemyMonToPlayerParty` adds it — copying an existing partner Pokémon, never fabricating one. | mf-6 |
 | `engine/math/random.asm:L1-13` | `Random_` derives a 16-bit value from the hardware divider `rDIV` via the seed bytes `hRandomAdd`/`hRandomSub`. | 02, 03, glossary, mf-3 |
 | `engine/math/random.asm:L3` | `ldh a, [rDIV]` — the RNG reads the hardware divider register as its entropy source. | 01, 02, glossary, mf-3 |
+| `engine/menus/naming_screen.asm:L243-250` | Name-entry length cap: a typed player name is limited to `PLAYER_NAME_LENGTH - 1` (7) characters. | 02, 03, 04, glossary, mf-2 |
 | `engine/menus/save.asm:L11` | `ld a, $2` — the good-checksum `wSaveFileStatus` value. | mf-5 |
 | `engine/menus/save.asm:L23` | `ld a, $1` — the bad-checksum `wSaveFileStatus` value. | mf-5 |
 | `engine/menus/save.asm:L237-240` | `SaveMainData` writes the checksum computed over the `sGameData` block (`CalcCheckSum` → `sMainDataCheckSum`) to SRAM. | 03 |
 | `engine/menus/save.asm:L312` | `CalcIndividualBoxCheckSums` recomputes each PC box's SRAM checksum. | mf-5 |
 | `engine/menus/save.asm:L329` | `GetBoxSRAMLocation` maps a box number to its SRAM bank and pointer. | mf-5 |
+| `engine/movie/oak_speech/oak_speech2.asm:L70-77` | The chosen player name is copied (`NAME_LENGTH` bytes) into `wNameBuffer` via `CopyData` during Oak's intro. | mf-2 |
+| `engine/movie/oak_speech/oak_speech2.asm:L192-214` | `GetDefaultName` walks the name list to the preset entry at index `a` (used when the player picks a default name). | mf-2 |
 | `engine/pokemon/bills_pc.asm:L95` | `BillsPC_` — Bill's PC box-storage entry point. | mf-5 |
 | `engine/pokemon/bills_pc.asm:L207` | `BillsPCDeposit` reads `wPartyCount` when depositing a Pokémon. | mf-5, mf-8 |
 | `engine/pokemon/bills_pc.asm:L256` | `BillsPCWithdraw` reads `wBoxCount` — the complementary withdraw path from Bill's PC. | mf-5, mf-8 |
@@ -110,8 +141,10 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `home/pokemon.asm:L399-400` | `cp MEW` special-cases base-stats loading; a loader, not a placement into an obtainable source. | 04 |
 | `home/random.asm:L1-12` | `Random` is the public wrapper (`farcall Random_`) that returns `hRandomAdd`. | 02, mf-3 |
 | `home/serial.asm:L1-18` | `Serial` interrupt handler exchanges bytes through `rSB`/`rSC`. | mf-6 |
-| `home/serial.asm:L55-87` | `Serial_ExchangeBytes` (invoked for the link party-data exchange from `[engine/link/cable_club.asm:L131-135]`) relays bytes: it reads each byte from `[hl]`, transmits it, and stores the received byte to `[de]`, looping over the length counter. The routine copies existing bytes only — no instruction in this range fabricates or transforms a species value — so it cannot introduce a `MEW` byte that is not already present on the partner cartridge. | mf-6 |
+| `home/serial.asm:L55` | `Serial_ExchangeBytes` — the link byte-exchange routine (invoked for the party-data exchange from `engine/link/cable_club.asm:L131-135`); it relays existing bytes only and so cannot fabricate or transform a species value, and cannot introduce a `MEW` byte that is not already present on the partner cartridge. | mf-6 |
 | `home/trainers.asm:L128-159` | `CheckFightingMapTrainers` starts a map trainer's engagement through normal movement. | 03 |
+| `home/trainers.asm:L233-235` | `InitBattleEnemyParameters` copies `wEngagedTrainerClass` into `wCurOpponent`. | mf-1 |
+| `home/trainers.asm:L327-338` | `EngageMapTrainer` loads the engaged trainer's class and set into `wEngagedTrainerClass` / `wEngagedTrainerSet`. | mf-1 |
 
 ## ram/
 
@@ -121,12 +154,17 @@ Chapters are referenced by short tags: `README`, `01` (overview and constraints)
 | `ram/sram.asm:L12-21` | The `SRAM` "Save Data" section declares the persisted save-data layout — `sGameData`/`sPlayerName`/`sMainData`/`sPartyData`/`sCurBoxData` — establishing persistence and region layout only. That this layout can be *corrupted* to inject or reinterpret party/box data is external disclosure metadata, documented as such in [mf-5](methods/mf-5-save-box-corruption.md); it is not a behavior this range establishes. | 03, glossary |
 | `ram/sram.asm:L16` | `sGameData` — start of the persisted save-data region. | mf-5 |
 | `ram/sram.asm:L18` | `sMainData` — the main saved-game data block. | mf-5 |
+| `ram/sram.asm:L20-21` | `sPartyData` and `sCurBoxData` — the persisted party and current-box SRAM blocks. | mf-5 |
 | `ram/sram.asm:L21` | `sCurBoxData` — the current PC box's saved data. | mf-5 |
 | `ram/sram.asm:L24` | `sMainDataCheckSum` — the checksum byte guarding the main save data. | mf-5 |
 | `ram/sram.asm:L33` | `sBox{n}` macro — each PC box's SRAM storage block. | mf-5 |
 | `ram/sram.asm:L41` | `sBank2AllBoxesChecksum` — aggregate checksum for the first saved-box bank. | mf-5 |
+| `ram/wram.asm:L525-582` | The 39-byte `UNION` that overlays the enemy unmodified-stat buffers with `wEngagedTrainerClass` / `wEngagedTrainerSet`. | mf-1 |
+| `ram/wram.asm:L563` | `wEnemyMonUnmodifiedSpecial` — the enemy's unmodified Special-stat word within the union. | mf-1 |
+| `ram/wram.asm:L580` | `wEngagedTrainerClass` — the engaged-trainer class byte aliasing the enemy-mon union region. | mf-1 |
 | `ram/wram.asm:L899-906` | The 20-byte `UNION` where `wNameBuffer` (name staging) aliases `wMoveData` (in-battle move data). | 03, glossary, mf-7 |
 | `ram/wram.asm:L1101` | `wCurPartySpecies` — the current party/encounter species byte. | 02, glossary, mf-4 |
+| `ram/wram.asm:L1101-1103` | `wCurPartySpecies`, `wCurItem`, and `wCurListMenuItem` share one WRAM address (a `UNION` alias). | mf-4 |
 | `ram/wram.asm:L1193` | `wEnemyMonSpecies2` — the enemy species byte the wild-vs-trainer branch tests. | mf-1 |
 | `ram/wram.asm:L1198` | `wEnemyMon` — the enemy Pokémon battle struct. | 02, mf-1, mf-4, mf-7 |
 | `ram/wram.asm:L1563` | `wMovesString:: ds NUM_MOVES * MOVE_NAME_LENGTH` — the concatenated move-name string buffer that `FormatMovesString` writes into. | 03, mf-7 |

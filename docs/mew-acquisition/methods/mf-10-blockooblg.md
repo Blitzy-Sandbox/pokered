@@ -3,7 +3,7 @@
 ## Mechanism summary
 
 - The block out-of-bounds LOL glitch — publicly disclosed as **blockoobLG** — is a variant of [oobLG](mf-9-out-of-bounds-lol-glitch.md) that sets the opponent-species byte through a different source, removing the constraint that keeps plain oobLG out of the control-character index range.
-- **External disclosure metadata (from the public corpus, not behavior of the cited lines):** by controlling which item/tile drives the write, blockoobLG can place species indices whose values fall in the control-character range — the disclosed corpus names Dratini and Kabuto as examples that plain oobLG cannot reach. That same control-character range contains Mew's index `$15` `[constants/pokemon_constants.asm:L30]`, `[constants/charmap.asm:L1]`, so blockoobLG **can** set the opponent-species byte to `$15`.
+- **External disclosure metadata (from the public corpus, not behavior of the cited lines):** by controlling which item/tile drives the write, blockoobLG extends the set of opponent-species indices reachable beyond plain oobLG; the disclosed corpus names Dratini and Kabuto as examples plain oobLG cannot reach, and their internal indices `$58` `[constants/pokemon_constants.asm:L97]` and `$5A` `[constants/pokemon_constants.asm:L99]` lie well above the control-character range rather than inside it. Crucially, blockoobLG's reachable set also includes that low control-character range `[constants/charmap.asm:L1]`, which contains Mew's index `$15` `[constants/pokemon_constants.asm:L30]`, so blockoobLG **can** set the opponent-species byte to `$15`.
 - Because the family is already published, this chapter documents it **only as excluded contrast** and never presents it as a novel method.
 
 ## Legal-input sequence
@@ -16,7 +16,6 @@
 - Once the opponent-species byte is set, `InitOpponent` loads it as the current species and copies it into the enemy-species buffer `[engine/battle/core.asm:L6647-6650]`:
 
 ```asm
-InitOpponent:
 	ld a, [wCurOpponent]
 	ld [wCurPartySpecies], a
 	ld [wEnemyMonSpecies2], a
