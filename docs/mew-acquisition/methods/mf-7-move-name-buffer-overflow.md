@@ -48,8 +48,8 @@
 
 ## Inputs-only verdict (R2)
 
-- Verdict: **Partially input-reachable.** The formatter itself is ordinary code reached through normal play `[engine/battle/misc.asm:L2]`, but the overflow manifests only after a disclosed glitch move with an unterminated name is already present, which is not a clean-save, controller-only path.
-- It fails R1 regardless as a disclosed technique, and this guide withholds any concrete trigger sequence.
+- Verdict: **Input-reachable = Yes (controller-only, though not ordinary play).** R2 permits *any* legitimate controller input, not merely intended ("ordinary") play, so the distinction matters here: the move-name formatter is ordinary code reached on every battle turn `[engine/battle/misc.asm:L2]`, and the disclosed corpus documents a controller-only route (external disclosure metadata) to the prerequisite state — a move slot holding an unterminated-name glitch move — without any memory editor, cheat device, or save surgery. That the route is not part of *ordinary* play does not make it input-unreachable; it remains reachable with the standard controller alone.
+- The verdict is therefore **not** "partially input-reachable": it is input-reachable under R2. It fails the guide's novel-method test only on R1, as a disclosed technique — and this guide withholds any concrete trigger sequence, glitch-move acquisition steps, or byte values regardless of that reachability.
 
 ## Limitations
 

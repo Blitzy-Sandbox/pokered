@@ -63,12 +63,12 @@ The flowchart below summarizes this pipeline and its table-bounded terminal stat
 
 ```mermaid
 flowchart TD
-    A["rDIV hardware divider"] --> B["Random_ / Random update hRandomAdd and hRandomSub"]
-    B --> C{"Encounter gate: hRandomAdd vs rate"}
-    C -->|pass| D["Slot select: hRandomSub via WildMonEncounterSlotChances"]
-    C -->|fail| E["No encounter"]
-    D --> F["Index into current map fixed 10-slot table"]
-    F --> G["Species from table only; $15 absent from every table"]
+    A["rDIV hardware divider<br/>[engine/math/random.asm:L3]"] --> B["Random_ / Random update hRandomAdd and hRandomSub<br/>[engine/math/random.asm:L1-13]"]
+    B --> C{"Encounter gate: hRandomAdd vs rate<br/>[engine/battle/wild_encounters.asm:L47-53]"}
+    C -->|pass| D["Slot select: hRandomSub via WildMonEncounterSlotChances<br/>[engine/battle/wild_encounters.asm:L54-65]"]
+    C -->|fail| E["No encounter<br/>[engine/battle/wild_encounters.asm:L47-53]"]
+    D --> F["Index into current map fixed 10-slot table<br/>[constants/pokemon_data_constants.asm:L97-98], [engine/battle/wild_encounters.asm:L66-80]"]
+    F --> G["Species from table only; $15 absent from every table<br/>[engine/battle/wild_encounters.asm:L74-80], [constants/pokemon_constants.asm:L30]"]
 ```
 
 ## Catch step

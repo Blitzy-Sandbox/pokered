@@ -6,8 +6,8 @@ This chapter analyzes the Game Link trade path as a candidate route to obtaining
 
 - A link trade over the Game Link Cable exchanges a Pokémon between two connected cartridges through the Trade Center, a session driven by the cable-club routine `CableClub_DoBattleOrTrade` [engine/link/cable_club.asm:L4].
 - The game records the active link session in `wLinkState`, a variable other routines read to branch on the current link state — for example, the shared link-battle PRNG reads it before generating a number [engine/battle/core.asm:L6543-6548].
-- A trade only relays the bytes of a Pokémon that the sending cartridge already holds; the serial pipeline copies existing party data and never fabricates a new species [home/serial.asm:L1-18].
-- Because a trade relays only a Pokémon a cartridge already holds, it can transfer a pre-existing Mew but cannot originate or catch one; and since Mew `$15` [constants/pokemon_constants.asm:L30] appears in no in-game trade-table entry [data/events/trades.asm:L18-27] and no obtainable source fills that index, two clean unmodified saves have no Mew for a trade to relay [home/serial.asm:L1-18].
+- A trade only relays the bytes of a Pokémon that the sending cartridge already holds. The trade logic copies from an already-owned party: in `TradeCenter_Trade` [engine/link/cable_club.asm:L682] the game removes the offered mon with `RemovePokemon` [engine/link/cable_club.asm:L800] and then copies the *received* cartridge's existing `wEnemyMons` entry into the party with `CopyData` followed by `AddEnemyMonToPlayerParty` [engine/link/cable_club.asm:L816-817], so no new species is ever fabricated.
+- Because a trade relays only a Pokémon a cartridge already holds, it can transfer a pre-existing Mew but cannot originate or catch one; and since Mew `$15` [constants/pokemon_constants.asm:L30] appears in no in-game trade-table entry [data/events/trades.asm:L18-27] and — by a separate source audit — no obtainable source fills that index, two clean unmodified saves have no Mew for a trade to relay (the source-species-absence proof is independent of the relay mechanism and is compiled in [Conclusion and limitations](../04-conclusion-and-limitations.md)).
 
 ## Legal-input sequence
 
@@ -18,8 +18,8 @@ This chapter analyzes the Game Link trade path as a candidate route to obtaining
 | 1 | Connect the Game Link Cable between two Game Boys | Establishes the serial link the `Serial` interrupt handler services [home/serial.asm:L1-18] |
 | 2 | Enter the Cable Club and step onto the Trade Center link table | Starts the cable-club session through `CableClub_DoBattleOrTrade` [engine/link/cable_club.asm:L4] |
 | 3 | Select the trade option | Sets `wLinkState` to `LINK_STATE_TRADING` for the session [engine/link/cable_club.asm:L274-278] |
-| 4 | Choose a Pokémon to offer | Queues an existing party or box Pokémon for the multi-byte exchange [home/serial.asm:L55] |
-| 5 | Confirm the trade | Exchanges the selected Pokémon's data over the serial port [home/serial.asm:L1-18] |
+| 4 | Choose a Pokémon to offer | Selects an existing party Pokémon whose data is placed in the exchanged party data block [engine/link/cable_club.asm:L131-135] |
+| 5 | Confirm the trade | Swaps the party data block between the two Game Boys, then installs the received mon via the `TradeCenter_Trade` remove/copy/add sequence [engine/link/cable_club.asm:L131-135], [engine/link/cable_club.asm:L800] |
 
 - Each step is driven by the normal cable-club session routine [engine/link/cable_club.asm:L4], so the sequence is fully R2-legal; however, the mechanism analysis below shows a trade is transfer-only — it can relay a pre-existing Mew but cannot originate or catch one, and a clean-save trade has no Mew to carry [data/events/trades.asm:L18-27].
 
@@ -40,7 +40,7 @@ ldh a, [rSB]
 ldh [hSerialReceiveData], a
 ```
 
-- Bulk data such as the party structure is moved with the multi-byte routine `Serial_ExchangeBytes`, which copies the bytes of an already-owned Pokémon rather than synthesizing one [home/serial.asm:L55].
+- The party structure itself is exchanged by the trade routine: `CableClub_DoBattleOrTrade` points `hl`/`de` at the player and enemy party data blocks and calls `Serial_ExchangeBytes` to swap them [engine/link/cable_club.asm:L131-135], the low-level transport being the multi-byte routine `Serial_ExchangeBytes` [home/serial.asm:L55]. The exchange moves the bytes of already-owned party mons; it never synthesizes a new species.
 - The transfer-only bound has two parts. First, the only NPC trades the game offers are the ten fixed `TradeMons` entries [data/events/trades.asm:L18-27]:
 
 ```asm
@@ -49,7 +49,7 @@ npctrade ABRA,       MR_MIME,   TRADE_DIALOGSET_CASUAL,    "MARCEL"     ; used i
 ```
 
 - Those ten entries are NIDORINO, ABRA, BUTTERFREE, PONYTA, SPEAROW, SLOWBRO, POLIWHIRL, RAICHU, VENONAT, and NIDORAN_M — none of which is Mew [data/events/trades.asm:L18-27].
-- Second, a player-to-player trade can likewise relay only a Pokémon that the partner cartridge already holds, so it too requires a pre-existing Mew to send [home/serial.asm:L1-18].
+- Second, a player-to-player trade can likewise relay only a Pokémon that the partner cartridge already holds: the received mon is copied from the partner's existing `wEnemyMons` data by `CopyData` and `AddEnemyMonToPlayerParty` [engine/link/cable_club.asm:L816-817], so it too requires a pre-existing Mew to send.
 - Mew occupies species index `$15` [constants/pokemon_constants.asm:L30], and no obtainable source on either Red or Blue fills that index — the exhaustive cross-source audit is compiled in [Conclusion and limitations](../04-conclusion-and-limitations.md):
 
 ```asm
@@ -83,8 +83,8 @@ jr c, .failedToCapture
 
 ## Limitations
 
-- Trade is a transfer, not a generator: the serial exchange only copies an existing Pokémon's bytes between cartridges [home/serial.asm:L55].
+- Trade is a transfer, not a generator: the trade routine copies an existing mon's bytes from the partner's party data into the recipient's party [engine/link/cable_club.asm:L816-817], carried over the low-level serial transport [home/serial.asm:L55].
 - The in-game trade table lists ten fixed species and none is Mew [data/events/trades.asm:L18-27].
-- A player-to-player trade can only relay a Pokémon a cartridge already holds [home/serial.asm:L1-18], and Mew's species index `$15` [constants/pokemon_constants.asm:L30] is filled by no obtainable source on either cartridge, so two clean saves have no Mew to exchange; a trade can still relay a pre-existing Mew, but that transfers rather than originates or catches it — the exhaustive audit is in [Conclusion and limitations](../04-conclusion-and-limitations.md).
+- A player-to-player trade can only relay a Pokémon a cartridge already holds — the received mon is copied from the partner's existing party data [engine/link/cable_club.asm:L816-817]. Separately, Mew's species index `$15` [constants/pokemon_constants.asm:L30] is filled by no obtainable source on either cartridge (the exhaustive `MEW`-symbol audit is in [Conclusion and limitations](../04-conclusion-and-limitations.md)), so two clean saves have no Mew to exchange; a trade can still relay a pre-existing Mew, but that transfers rather than originates or catches it.
 - Mew's catch rate of 45 [data/pokemon/base_stats/mew.asm:L7] is irrelevant here: a traded Pokémon is received already-owned and never reaches a catch step, and a clean-save trade has no Mew to trade in any case [data/events/trades.asm:L18-27].
 - For the shared capture and RNG primitives referenced above, see the [Game mechanics reference](../02-game-mechanics-reference.md).

@@ -2,15 +2,15 @@
 
 ## Mechanism summary
 
-- This chapter covers the **disclosed** save/box/SRAM-corruption family — publicly labelled the **255-Pokémon (box/party overflow) glitch**, **expanded-party / box manipulation**, and **checksum abuse** — which corrupts or reinterprets the persistent game data that the save system stores in SRAM `[ram/sram.asm:L16]`.
-- The species byte at issue for this guide is `$15`, the internal index that identifies Mew `[constants/pokemon_constants.asm:L30]`, so a successful variant would place or reinterpret that byte in a party or box slot `[ram/sram.asm:L21]`.
+- This chapter covers the **disclosed** save/box/SRAM-corruption family — publicly labelled the **255-Pokémon (box/party overflow) glitch**, **expanded-party / box manipulation**, and **checksum abuse**. What the repository establishes is only that the save system stores the persistent game data in an SRAM region beginning at `sGameData` `[ram/sram.asm:L16]`; the corruption or reinterpretation of that data is the disclosed technique (external disclosure metadata), not a behavior of the cited storage layout.
+- The species byte at issue for this guide is `$15`, the internal index that identifies Mew `[constants/pokemon_constants.asm:L30]`; the SRAM layout reserves party and current-box data at `sPartyData` / `sCurBoxData` `[ram/sram.asm:L20-21]`, and a successful disclosed variant would place or reinterpret Mew's byte in one of those slots — the placement being the external technique, not something the layout citation demonstrates.
 - The persistent data these variants target is guarded by a checksum that the loader validates on boot, recording a good result as `$2` `[engine/menus/save.asm:L11]` or, when validation fails, a bad result as `$1` `[engine/menus/save.asm:L23]`.
 - Because this entire family is already documented publicly, it appears here **only as an EXCLUDED contrast** and is never presented as a novel method.
 
 ## Legal-input sequence
 
 - No working corruption recipe is given here — this section only classifies the family's reachability.
-- Some corruption is partially reachable through **in-game save-and-reset timing**, because the ordinary save flow is exactly what writes the checksum-validated state that the loader later grades as good (`$2`) `[engine/menus/save.asm:L11]` or bad (`$1`) `[engine/menus/save.asm:L23]`.
+- *External disclosure metadata:* the public corpus reports that some corruption is partially reachable through **in-game save-and-reset timing**. What the repository supports is only the persistence fact that the ordinary save flow writes a checksum-validated state which the loader later grades as good (`$2`) `[engine/menus/save.asm:L11]` or bad (`$1`) `[engine/menus/save.asm:L23]`; that a mistimed save/reset yields an exploitable corrupt state is the disclosed claim, not a behavior shown by these lines.
 - Editing the save file directly on a PC (or with any external tool) is **not** a game-provided input and is therefore excluded by R2; only in-game save/reset actions count as legal inputs.
 - No byte-level payload, address list, or step-by-step sequence is provided, by design.
 
@@ -44,7 +44,7 @@ BillsPCDeposit:
 ```
 
 - The complementary withdraw path is `BillsPCWithdraw` `[engine/pokemon/bills_pc.asm:L256]`.
-- The disclosed variants work by **desynchronizing these counts and checksums** so that bytes already resident in the SRAM party/box region are re-graded as valid and reinterpreted as species indices `[ram/sram.asm:L16]`, `[engine/menus/save.asm:L312]`.
+- *External disclosure metadata:* the disclosed variants work by **desynchronizing these counts and checksums** so that bytes already resident in the SRAM party/box region are re-graded as valid and reinterpreted as species indices. The repository is cited only for the storage region `sGameData` `[ram/sram.asm:L16]` and for the routine `CalcIndividualBoxCheckSums` that recomputes per-box checksums `[engine/menus/save.asm:L312]`; neither the desynchronization nor the re-grading is a behavior of these normal routines — they are the surface the disclosed technique manipulates.
 - Because that desynchronization is the entirety of the published technique, the family is disclosed and excluded, and no working sequence is reproduced here.
 
 ## Catch step
@@ -62,12 +62,12 @@ BillsPCDeposit:
 ## Inputs-only verdict (R2)
 
 - Verdict: **Partially input-reachable.**
-- Some corruption can be induced through in-game save/reset timing, which drives the same checksum-validated save state the loader grades as good (`$2`) `[engine/menus/save.asm:L11]` or bad (`$1`) `[engine/menus/save.asm:L23]`, so this part of the family does not by itself require external tools.
+- Per the public corpus (external disclosure metadata), some corruption can be induced through in-game save/reset timing; the repository citation supports only that the loader grades a checksum-validated save state as good (`$2`) `[engine/menus/save.asm:L11]` or bad (`$1`) `[engine/menus/save.asm:L23]`. To the extent the disclosed technique is real, that portion does not by itself require external tools — but the corruption mechanism is disclosed, not demonstrated by these lines.
 - However, the technique is disclosed and thus already fails R1, and any variant that relies on editing the save file on a PC would additionally violate R2 because that is not a game-provided input.
 
 ## Limitations
 
 - This is a **disclosed** family and is excluded by R1; it is documented here as contrast only.
 - No working corruption recipe is provided — only the save/SRAM/box surface (for example `sGameData` `[ram/sram.asm:L16]` and `CalcIndividualBoxCheckSums` `[engine/menus/save.asm:L312]`) is described, enough to classify the family.
-- Even the portion reachable through in-game save/reset timing `[engine/menus/save.asm:L11]` remains a disclosed technique, so it cannot satisfy the novelty requirement.
+- Even the portion the disclosed corpus reports as reachable through in-game save/reset timing (whose only repository anchor is the loader's checksum grading `[engine/menus/save.asm:L11]`) remains a disclosed technique, so it cannot satisfy the novelty requirement.
 - For the adjudication that places this family in the excluded corpus, see the [Novelty verification](../03-novelty-verification.md) chapter.

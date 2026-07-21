@@ -13,16 +13,36 @@
 
 | Step | Input | Effect |
 | --- | --- | --- |
-| 1 | Arrange for the last Pokémon seen or fought to have a Special of 21 (for example, by battling a species whose Special is 21) | Leaves the value 21 in the enemy-stat memory the glitch later reinterprets |
-| 2 | Walk into a distant Trainer's line of sight, then open the Start menu on the trigger frame | Interrupts the normal battle-start sequence before a wild species is read from a map table [engine/battle/core.asm:L6664] |
-| 3 | Close the menu and let the interrupted special encounter resolve | The retained value is copied into the enemy-species field [engine/battle/core.asm:L6647-6650] and consumed as the species index by the wild-vs-trainer branch, producing a Mew battle [engine/battle/core.asm:L6674-6676] |
+| 1 | Trigger a distant (long-range) Trainer's sighting, then open the Start menu on the trigger frame to defer the battle | The engaged-trainer state is written by `EngageMapTrainer` before the battle is fully set up, leaving the engagement pending [home/trainers.asm:L327-338] |
+| 2 | While the battle is deferred, arrange for the shared engaged-trainer byte to hold 21 (in the disclosed recipe, by viewing or using a Pokémon whose Special stat is 21) | The enemy-stat buffers and `wEngagedTrainerClass` occupy the same `UNION` storage, so a stat-derived value of 21 lands in the byte later read as the opponent id [ram/wram.asm:L525-582] |
+| 3 | Close the menu and let the deferred battle resolve | `InitBattleEnemyParameters` copies `wEngagedTrainerClass` into `wCurOpponent` [home/trainers.asm:L233-235], `InitOpponent` copies that into the enemy-species field [engine/battle/core.asm:L6647-6650], and the wild-vs-trainer branch reads 21 as wild species `$15` = Mew [engine/battle/core.asm:L6674-6676] |
 | 4 | Throw a Poké Ball | Hands off to the ordinary catch path (see Catch step) |
 
 - The full, precise public steps for this family are disclosed elsewhere (catalogued in the novelty chapter's corpus) and are out of scope to reproduce here, because R1 explicitly excludes them.
 
-## Code-cited mechanism
+The family is an emergent misuse of the ordinary battle-setup path rather than a separate routine, yet the exact code that lets a retained stat value become a wild species can be cited step by step.
 
-- The family is an emergent misuse of the ordinary battle-setup path rather than a separate routine, yet the exact code that reinterprets a retained value as a wild species can be cited directly. When a battle is set up, `InitOpponent` copies the opponent id from `wCurOpponent` into both the current-party-species and enemy-species fields [engine/battle/core.asm:L6647-6650]:
+### The engaged-trainer alias chain
+
+- The retail WRAM defines a 39-byte `UNION` that overlays two layouts on the same storage: in one layout the bytes hold the player and enemy unmodified-stat buffers (ending in `wEnemyMonUnmodifiedSpecial`), and in the other they hold `wEngagedTrainerClass` and `wEngagedTrainerSet` [ram/wram.asm:L525-582]. `wEngagedTrainerClass` therefore shares its storage with the enemy Special-stat buffer word `wEnemyMonUnmodifiedSpecial` [ram/wram.asm:L563], [ram/wram.asm:L580].
+- During normal play the enemy-stat buffers are populated from the current enemy Pokémon: when enemy data is loaded, `CopyData` copies its level and stats into `wEnemyMonUnmodified{Level..Special}` [engine/battle/core.asm:L6138-6141]. A value derived from a Pokémon's Special stat can thus persist in the union storage that `wEngagedTrainerClass` reads.
+- The engaged-trainer field itself is written from map data when a trainer engages, in `EngageMapTrainer` [home/trainers.asm:L327-338]:
+
+```asm
+	ld a, [hli]    ; load trainer class
+	ld [wEngagedTrainerClass], a
+```
+
+- When the deferred battle is set up, `InitBattleEnemyParameters` copies `wEngagedTrainerClass` straight into `wCurOpponent` [home/trainers.asm:L233-235]:
+
+```asm
+	ld a, [wEngagedTrainerClass]
+	ld [wCurOpponent], a
+```
+
+### From `wCurOpponent` to a wild species
+
+- Continuing the chain, when the battle is set up `InitOpponent` copies the opponent id from `wCurOpponent` into both the current-party-species and enemy-species fields [engine/battle/core.asm:L6647-6650]:
 
 ```asm
 	ld a, [wCurOpponent]
@@ -46,7 +66,7 @@
 	callfar TryDoWildEncounter
 ```
 
-- The disclosed technique's only contribution is to interrupt the battle-start sequence so that this far-call never runs and the enemy-species field keeps a leftover value (arranged, in the published recipe, to equal a Special stat of 21); the reinterpretation itself is performed entirely by the ordinary `InitOpponent` copy and the wild-vs-trainer branch cited above [engine/battle/core.asm:L6647-6650], [engine/battle/core.asm:L6674-6676].
+- The disclosed technique's only contribution is a matter of timing: it defers a trainer engagement so that the deferred battle is set up through the engaged-trainer path (`InitBattleEnemyParameters` → `wCurOpponent` → `InitOpponent`) while the shared union byte holds 21, rather than through the ordinary wild-encounter far-call. The reinterpretation itself is performed entirely by the stock copies and the wild-vs-trainer branch cited above [home/trainers.asm:L233-235], [engine/battle/core.asm:L6647-6650], [engine/battle/core.asm:L6674-6676]; the published recipe arranges the value 21, and this guide does not reproduce that recipe because R1 excludes it.
 - Once the resulting wild battle has begun, its random values come from `BattleRandom`, which uses a shared PRNG list only during link battles and otherwise falls straight through to `Random` [engine/battle/core.asm:L6543-6548]:
 
 ```asm
