@@ -27,21 +27,12 @@
 - `FormatMovesString` then copies characters out of `wNameBuffer` into `wMovesString` until a `"@"`, with no byte counter bounding the loop `[engine/battle/misc.asm:L17-24]`.
 
 ```asm
-.copyNameLoop
 	ld a, [hli]
 	cp '@'
 	jr z, .doneCopyingName
-	ld [de], a
 ```
 
-- `wNameBuffer` is only 20 bytes and shares its WRAM region, through a `UNION`, with in-battle move data (`wMoveData`) `[ram/wram.asm:L899-906]`; the write destination `wMovesString` is likewise a fixed region `[ram/wram.asm:L1563]`.
-
-```asm
-UNION
-wNameBuffer:: ds NAME_BUFFER_LENGTH
-NEXTU
-wMoveData:: ds MOVE_LENGTH
-```
+- `wNameBuffer` is only `NAME_BUFFER_LENGTH` (20) bytes and is overlaid — via a `UNION`/`NEXTU` block that the source itself notes "spans 20 bytes" — onto the in-battle move data `wMoveData`, so the two occupy the same WRAM region `[ram/wram.asm:L899-906]`; the write destination `wMovesString` is likewise a fixed region `[ram/wram.asm:L1563]`.
 
 - If the staged name has no `"@"` among its bytes, the copy over-reads past `wNameBuffer` and over-writes past `wMovesString`, so it corrupts whatever WRAM follows those buffers. It does not, by itself, rewrite the enemy-species byte, which lives in a different region `[ram/wram.asm:L1198]`; the corruption's effect depends entirely on what disclosed setup placed in the overrun path.
 
